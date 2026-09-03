@@ -1,4 +1,4 @@
-/* University Knowledge Assistant - Exercise 1 Styling */
+/* University Knowledge Assistant - Exercise 1 & 2 Styling */
 :root {
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
@@ -11,6 +11,8 @@
   --error-border: #fecaca;
   --error-text: #991b1b;
   --code-bg: #f1f5f9;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
 }
 
 * {
@@ -28,25 +30,61 @@ body {
 }
 
 .container {
-  max-width: 760px;
+  max-width: 860px;
   margin: 0 auto;
 }
 
 .app-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .app-header h1 {
   font-size: 1.875rem;
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .app-header .subtitle {
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 0.95rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Tabs */
+.nav-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+  background-color: #e2e8f0;
+  color: var(--text-main);
+}
+
+.tab-btn.active {
+  background-color: #dbeafe;
+  color: var(--primary-color);
+}
+
+.tab-view {
+  margin-top: 1.25rem;
 }
 
 .app-card {
@@ -124,6 +162,17 @@ button {
 #ask-btn:disabled {
   background-color: #94a3b8;
   cursor: not-allowed;
+}
+
+.primary-btn-sm {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+}
+
+.primary-btn-sm:hover {
+  background-color: var(--primary-hover);
 }
 
 .secondary-btn {
@@ -207,6 +256,226 @@ button {
   word-break: break-word;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   color: #0f172a;
+}
+
+/* ===================================================
+   Exercise 2: Knowledge Base Inspector Styles
+   =================================================== */
+
+.kb-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.summary-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 0.25rem;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 1rem;
+}
+
+.kb-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.65rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.kb-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+}
+
+.status-dot.ready {
+  background-color: var(--success-color);
+}
+
+.status-dot.warning {
+  background-color: var(--warning-color);
+}
+
+.kb-inspector-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.kb-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.panel-header h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+select {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: #ffffff;
+  color: var(--text-main);
+  outline: none;
+}
+
+.doc-meta-info {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.doc-preview-box {
+  background: var(--code-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.85rem;
+  font-size: 0.85rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.chunk-count-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.chunks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.chunk-card {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.85rem;
+  background: #fafafa;
+}
+
+.chunk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.chunk-id-tag {
+  font-weight: 600;
+  font-size: 0.8rem;
+  background: #e2e8f0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.chunk-section-tag {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.chunk-body {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-main);
+  margin-bottom: 0.65rem;
+  background: #ffffff;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #f1f5f9;
+}
+
+.chunk-vector-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.78rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.vector-summary {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.vector-full {
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed var(--border-color);
+  word-break: break-all;
+  color: var(--text-muted);
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.empty-notice {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1.5rem;
 }
 
 .app-footer {

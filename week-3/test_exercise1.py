@@ -42,11 +42,11 @@ def test_ask_schema_validation():
 
 def test_ask_ollama_unreachable_error():
     """Verify /api/ask returns HTTP 503 with clear message when Ollama is unreachable."""
-    response = client.post("/api/ask", json={"question": "What is an operating system?"})
-    # Since Ollama is not running on localhost:11434 in this test environment, expect 503
-    assert response.status_code == 503, f"Expected 503 when Ollama is offline, got {response.status_code}"
-    data = response.json()
-    assert "Cannot connect to Ollama" in data.get("detail", ""), f"Unexpected error detail: {data}"
+    with patch("app.services.ollama_service.OLLAMA_BASE_URL", "http://127.0.0.1:9999"):
+        response = client.post("/api/ask", json={"question": "What is an operating system?"})
+        assert response.status_code == 503, f"Expected 503 when Ollama is offline, got {response.status_code}"
+        data = response.json()
+        assert "Cannot connect to Ollama" in data.get("detail", ""), f"Unexpected error detail: {data}"
     print("PASS: test_ask_ollama_unreachable_error")
 
 

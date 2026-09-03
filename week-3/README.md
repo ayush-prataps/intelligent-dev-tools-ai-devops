@@ -1,164 +1,154 @@
-# Week 3 — Exercise 1: University Knowledge Assistant
+# Week 3 — University Knowledge Assistant
 
 ## 1. Overview
 
-The **University Knowledge Assistant** is a web-based educational tool designed to help students ask academic, course, and programming questions and receive answers from a local Large Language Model (**Code Llama 7B Instruct**) running via **Ollama**.
+The **University Knowledge Assistant** is an educational AI application designed to provide accurate answers to student questions regarding university regulations, course rules, academic policies, and campus facilities.
 
-In **Exercise 1**, the application establishes the direct end-to-end integration without intermediate data stores:
-`Browser UI → FastAPI Application → Ollama HTTP API → Code Llama`.
+The project is built progressively across 5 exercises:
+- **Exercise 1 (Completed)**: Direct LLM query flow (`Browser UI → FastAPI → Ollama → Code Llama → Browser`).
+- **Exercise 2 (Completed)**: Knowledge Base creation (`Documents → Semantic Chunking → Ollama Embeddings → Vector Representation & Inspector UI`).
+- **Exercise 3**: Retrieval-Augmented Generation (RAG pipeline).
+- **Exercise 4**: Service separation & modularization.
+- **Exercise 5**: Docker containerization & VM deployment.
 
 ---
 
-## 2. Architecture & Request Flow
+## 2. Exercise 2: Knowledge Base Stage
 
+In Exercise 2, raw policy documents are processed into structured, vector-embedded knowledge chunks without requiring a heavyweight vector database.
+
+### The Pipeline Flow:
 ```text
-Student (Browser)
-       │
-       ▼
-[Frontend UI] (HTML + CSS + Vanilla JS)
-       │
-       │  1. HTTP POST /api/ask { "question": "..." }
-       ▼
-[FastAPI Backend] (app/main.py)
-       │
-       │  2. Validates schema (AskRequest) & invokes service layer
-       ▼
-[Ollama Service] (app/services/ollama_service.py)
-       │
-       │  3. HTTP POST {OLLAMA_BASE_URL}/api/generate
-       │     { "model": "codellama:7b-instruct", "prompt": "...", "stream": false }
-       ▼
-[Ollama HTTP API Server] (Default: http://localhost:11434)
-       │
-       │  4. Runs inference
-       ▼
-[Code Llama 7B Model] (codellama:7b-instruct)
-       │
-       │  5. Emits completed text
-       ▼
-[Ollama Service]
-       │
-       │  6. Extracts 'response' field
-       ▼
-[FastAPI Backend]
-       │
-       │  7. Returns HTTP 200 { "answer": "..." }
-       ▼
-[Frontend UI]
-       │
-       ▼
-8. Hides loader and renders answer inside response card
+Raw University Documents (5 Markdown files)
+                    │
+                    ▼
+[Semantic-Aware Chunking] (app/services/chunking_service.py)
+  - Preserves [Doc Title > Section Name] context
+  - Respects natural paragraph and sentence boundaries
+                    │
+                    ▼
+[Embedding Generation] (app/services/embedding_service.py)
+  - HTTP POST {OLLAMA_BASE_URL}/api/embeddings
+  - Model: nomic-embed-text
+  - Dynamically determines vector dimension (768D)
+                    │
+                    ▼
+[Local Vector Storage] (data/knowledge_base.json)
+  - Human-readable JSON containing chunks, metadata, and numerical vector floats
+                    │
+                    ▼
+[FastAPI Inspection API & UI]
+  - GET /api/knowledge/summary
+  - GET /api/knowledge/documents
+  - GET /api/knowledge/chunks
+  - Interactive web UI inspector with vector sample previews
 ```
 
 ---
 
-## 3. Communication Breakdown
+## 3. University Knowledge Documents
 
-### A. Frontend → FastAPI
-- **Protocol**: HTTP / REST.
-- **Endpoint**: `POST /api/ask`.
-- **Payload**: `{"question": "string"}`.
-- **Client implementation**: Plain JavaScript `fetch()` API in `app/static/app.js`.
-- **Handling**: JavaScript disables the submit button, displays an animated loading indicator, and listens for the JSON response. If an HTTP error is returned (e.g., 503 if Ollama is down), it displays an error alert banner to the user.
-
-### B. FastAPI → Ollama
-- **Protocol**: HTTP.
-- **Endpoint**: `POST {OLLAMA_BASE_URL}/api/generate`.
-- **Payload**:
-  ```json
-  {
-    "model": "codellama:7b-instruct",
-    "prompt": "...",
-    "stream": false
-  }
-  ```
-- **Service implementation**: `app/services/ollama_service.py` using `httpx.AsyncClient`.
-- **Configuration**: Base URL is read dynamically from the `OLLAMA_BASE_URL` environment variable (default: `http://localhost:11434`), ensuring that when deployed in a VM or Docker environment in later exercises, no application code needs to be modified.
+Stored under `data/documents/`:
+1. `academic_policies.md`: Degree credits, course registration, prerequisite rules, academic probation, and Honors/Minor degrees.
+2. `attendance_policy.md`: 75% minimum attendance rule, medical condonation procedures, debarment criteria, and ERP monitoring.
+3. `examination_rules.md`: Examination hall entry, prohibited electronics, 10-point CGPA grading scale, and supplementary exams.
+4. `leave_policy.md`: Casual leave allowances, certified medical leave guidelines, On-Duty (OD) sports/competition leave, and semester withdrawal.
+5. `campus_facilities.md`: Central library hours and borrowing limits, GPU computing labs, innovation maker space, and sports arena rules.
 
 ---
 
-## 4. Project Structure
+## 4. Semantic-Aware Chunking Strategy
+
+Unlike naive character slicing (which cuts mid-word or separates related sentences), the chunker in `app/services/chunking_service.py`:
+1. **Parses Heading Hierarchy**: Treats `# Document Title` and `## Section Heading` as logical units.
+2. **Context Preservation**: Prepends `[Document Title > Section Name]` to every chunk so the language model always knows what rule the chunk belongs to.
+3. **Natural Boundaries**: Splits large sections only at paragraph (`\n\n`) or sentence ends.
+4. **Structured Metadata**: Each chunk stores `chunk_id`, `doc_id`, `section`, `text`, `char_count`, and `word_count`.
+
+---
+
+## 5. Embeddings & Dynamic Vector Representation
+
+- **Embedding Model**: `nomic-embed-text` via Ollama's `/api/embeddings` HTTP endpoint.
+- **Dynamic Dimension**: Vector dimension is **not** hard-coded. It is dynamically detected from the actual response (`len(vector) = 768`) and saved in `knowledge_base.json` metadata.
+- **Strict Error Handling**: No silent mock fallbacks during real generation. If Ollama is offline or the model is not installed, the system immediately returns a clear error explaining that `ollama serve` or `ollama pull nomic-embed-text` is required.
+- **Storage**: Chunks and their numerical vectors are stored in `data/knowledge_base.json`.
+
+---
+
+## 6. Project Structure
 
 ```text
 week-3/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py              # FastAPI application & route definitions
-│   ├── config.py            # Environment configuration with sensible defaults
-│   ├── schemas.py           # Pydantic request & response models
+│   ├── main.py              # Endpoints: /api/health, /api/ask, /api/knowledge/*
+│   ├── config.py            # Environment configuration (URLs, models, data paths)
+│   ├── schemas.py           # Pydantic validation schemas
 │   ├── services/
 │   │   ├── __init__.py
-│   │   └── ollama_service.py # Ollama HTTP API client
+│   │   ├── ollama_service.py     # Code Llama LLM client (Exercise 1)
+│   │   ├── chunking_service.py   # Semantic Markdown chunker (Exercise 2)
+│   │   ├── embedding_service.py  # Real Ollama embedding client (Exercise 2)
+│   │   └── knowledge_service.py  # Document & KB orchestrator (Exercise 2)
 │   └── static/
-│       ├── index.html       # Web interface structure
-│       ├── style.css        # Clean, professional styling
-│       └── app.js           # Client-side API call and DOM management
-├── requirements.txt         # Dependencies (fastapi, uvicorn, httpx)
-├── .env.example             # Environment variable template
-└── README.md                # Project documentation and guide
+│       ├── index.html       # Web UI with tab navigation (Ask Assistant & Knowledge Base)
+│       ├── style.css        # Responsive styling with summary cards, doc preview, and chunk cards
+│       └── app.js           # Client-side API calls, tab switching, and vector inspection
+├── data/
+│   ├── documents/           # 5 university policy documents
+│   └── knowledge_base.json  # Persisted chunks with 768D numerical vectors
+├── requirements.txt         # fastapi, uvicorn[standard], httpx
+├── .env.example             # Template for configuration
+├── .gitignore               # Excludes venv/ and pycache
+├── test_exercise1.py        # Exercise 1 test suite
+├── test_exercise2.py        # Exercise 2 test suite
+└── README.md                # Documentation & viva guide
 ```
 
 ---
 
-## 5. Setup & Running Locally
+## 7. How to Run Locally
 
-### Prerequisites
-1. Python 3.10+
-2. Ollama installed with the `codellama:7b-instruct` model pulled:
-   ```bash
-   ollama pull codellama:7b-instruct
-   ```
-3. Ollama server running:
-   ```bash
-   ollama serve
-   ```
+### 1. Prerequisites
+- Python 3.10+
+- Ollama installed and running (`ollama serve`)
+- Required models:
+  ```bash
+  ollama pull codellama:7b-instruct
+  ollama pull nomic-embed-text
+  ```
 
-### Installation & Run Steps
+### 2. Setup & Run Application
+```bash
+cd week-3
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-1. **Navigate to the `week-3` directory**:
-   ```bash
-   cd week-3
-   ```
+Open `http://localhost:8000` in your web browser:
+- **Tab 1 ("Ask Assistant")**: Ask questions directly to Code Llama (Exercise 1).
+- **Tab 2 ("Knowledge Base")**: Inspect documents, chunks, and embedding vectors, or trigger re-indexing (Exercise 2).
 
-2. **Create and activate a virtual environment** (recommended):
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+### 3. Run Automated Tests
+```bash
+# Run Exercise 1 regression suite
+./venv/bin/python test_exercise1.py
 
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **(Optional) Configure environment variables**:
-   ```bash
-   # Default is http://localhost:11434
-   export OLLAMA_BASE_URL="http://localhost:11434"
-   ```
-
-5. **Start the FastAPI application**:
-   ```bash
-   uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-   ```
-
-6. **Open in browser**:
-   Visit [http://localhost:8000](http://localhost:8000) in your web browser.
+# Run Exercise 2 test suite
+./venv/bin/python test_exercise2.py
+```
 
 ---
 
-## 6. API Endpoints
+## 8. Viva & Demonstration Talking Points
 
-| Method | Endpoint | Description | Sample Response |
-|---|---|---|---|
-| `GET` | `/api/health` | Service health check | `{"status": "ok"}` |
-| `POST` | `/api/ask` | Submit question to Code Llama | `{"answer": "A process is an executing program..."}` |
-| `GET` | `/` | Serves the HTML frontend | HTML document |
-
----
-
-## 7. Viva / Demonstration Talking Points
-
-- **Modularity**: By placing the Ollama HTTP call inside `app/services/ollama_service.py`, the business logic is decoupled from FastAPI route handlers. When Exercise 2 introduces RAG and retrieval, the route handler simply delegates to a retrieval-augmented service without restructuring the web application.
-- **Single-service deployment**: Mounting the `static` directory directly inside FastAPI eliminates the need for separate Node.js dev servers or complex Cross-Origin Resource Sharing (CORS) configurations in this stage.
-- **Clean Configuration**: The application never hardcodes `localhost:11434`; it reads `OLLAMA_BASE_URL`, adhering to Twelve-Factor App principles for clean deployment across local, VM, and containerized targets.
+1. **Why Ollama for embeddings?**
+   It eliminates the need to install 1.5+ GB of PyTorch and Hugging Face dependencies in Python, keeping the app lightweight and perfectly suited for the 6GB CPU-only Ubuntu VM used in later exercises.
+2. **Why semantic chunking over fixed-size character chunking?**
+   Fixed-character chunking splits words and cuts sentences in half, causing context loss. Our chunker groups text by Markdown headings and paragraphs, prepending context tags (`[Document > Section]`).
+3. **Why JSON vector storage instead of a vector database?**
+   In this stage, a vector database adds unnecessary operational complexity. Storing vectors in `knowledge_base.json` makes the embedding arrays 100% transparent and inspectable in real-time. In Exercise 3, we can easily compute cosine similarity directly over this file.
+4. **Dynamic Dimension Handling**:
+   The embedding dimension is dynamically measured from the returned vector (`len(embedding) = 768`) rather than hardcoded, ensuring flexibility if different embedding models are used.

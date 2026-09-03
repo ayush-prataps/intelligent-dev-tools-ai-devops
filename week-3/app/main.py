@@ -1,16 +1,27 @@
 import os
-from fastapi import FastAPI
+from typing import Optional
+from fastapi import FastAPI, Query
 from fastapi.staticfiles import StaticFiles
 
 from app.schemas import AskRequest, AskResponse
 from app.services.ollama_service import generate_answer
+from app.services.knowledge_service import (
+    get_raw_documents,
+    get_knowledge_summary,
+    load_knowledge_base,
+    build_knowledge_base
+)
 
 app = FastAPI(
     title="University Knowledge Assistant",
-    description="An AI assistant API powered by Code Llama running via Ollama",
+    description="An AI assistant API powered by Code Llama and local vector knowledge base",
     version="1.0.0"
 )
 
+
+# ==========================================
+# Exercise 1 Endpoints (Preserved untouched)
+# ==========================================
 
 @app.get("/api/health")
 def health_check():
@@ -25,8 +36,70 @@ async def ask_question(payload: AskRequest):
     return AskResponse(answer=answer)
 
 
+# ==========================================
+# Exercise 2: Knowledge Base Inspection API
+# ==========================================
+
+@app.get("/api/knowledge/summary")
+def get_kb_summary():
+    """Retrieve high-level summary of the knowledge base (document count, chunk count, dimensions)."""
+    return get_knowledge_summary()
+
+
+@app.get("/api/knowledge/documents")
+def list_documents():
+    """List original university policy documents and their content for inspection."""
+    return get_raw_documents()
+
+
+@app.get("/api/knowledge/chunks")
+def list_chunks(doc_id: Optional[str] = Query(None, description="Filter chunks by document ID")):
+    """List generated chunks along with embedding dimensions and vector samples."""
+    kb = load_knowledge_base()
+    if not kb:
+        return {"chunks": [], "status": "not_indexed"}
+
+    chunks = kb.get("chunks", [])
+    if doc_id:
+        chunks = [c for c in chunks if c.get("doc_id") == doc_id]
+
+    # Present chunks with clean vector inspection previews
+    inspected_chunks = []
+    for c in chunks:
+        vec = c.get("embedding", [])
+        sample_vector = [round(x, 4) for x in vec[:5]] if vec else []
+        inspected_chunks.append({
+            "chunk_id": c.get("chunk_id"),
+            "doc_id": c.get("doc_id"),
+            "doc_title": c.get("doc_title"),
+            "section": c.get("section"),
+            "text": c.get("text"),
+            "char_count": c.get("char_count"),
+            "word_count": c.get("word_count"),
+            "vector_dimension": len(vec),
+            "vector_sample": sample_vector,
+            "full_vector": vec
+        })
+
+    return {
+        "status": "ready",
+        "total": len(inspected_chunks),
+        "chunks": inspected_chunks
+    }
+
+
+@app.post("/api/knowledge/index")
+async def trigger_indexing():
+    """Trigger the document chunking and real embedding generation pipeline."""
+    result = await build_knowledge_base()
+    return {
+        "status": "success",
+        "message": "Knowledge base indexed successfully.",
+        "summary": result.get("metadata")
+    }
+
+
 # Mount static directory for frontend UI
-# Defined after API routes so /api/* endpoints are matched first
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")

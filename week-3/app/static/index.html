@@ -10,53 +10,123 @@
   <div class="container">
     <header class="app-header">
       <h1>University Knowledge Assistant</h1>
-      <p class="subtitle">Ask questions about courses, programming, and academic topics powered by Code Llama</p>
+      <p class="subtitle">Course rules, academic policies, and AI assistance</p>
+      
+      <!-- Tab Navigation -->
+      <nav class="nav-tabs" role="tablist">
+        <button type="button" class="tab-btn active" id="tab-ask" data-target="view-ask" role="tab" aria-selected="true">
+          💬 Ask Assistant (Ex 1)
+        </button>
+        <button type="button" class="tab-btn" id="tab-kb" data-target="view-kb" role="tab" aria-selected="false">
+          📚 Knowledge Base (Ex 2)
+        </button>
+      </nav>
     </header>
 
-    <main class="app-card">
-      <form id="ask-form">
-        <label for="question-input" class="form-label">Your Question</label>
-        <textarea
-          id="question-input"
-          name="question"
-          rows="4"
-          placeholder="e.g. Explain how binary search trees work with a quick Python code example."
-          required
-        ></textarea>
-        
-        <div class="form-actions">
-          <span class="hint">Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit</span>
-          <button type="submit" id="ask-btn">Ask Assistant</button>
-        </div>
-      </form>
+    <!-- TAB 1: ASK ASSISTANT (EXERCISE 1) -->
+    <main id="view-ask" class="tab-view active">
+      <div class="app-card">
+        <form id="ask-form">
+          <label for="question-input" class="form-label">Your Question</label>
+          <textarea
+            id="question-input"
+            name="question"
+            rows="4"
+            placeholder="e.g. Explain how binary search trees work with a quick Python code example."
+            required
+          ></textarea>
+          
+          <div class="form-actions">
+            <span class="hint">Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit</span>
+            <button type="submit" id="ask-btn">Ask Assistant</button>
+          </div>
+        </form>
 
-      <!-- Loading State -->
-      <div id="loading-state" class="state-box hidden" role="status" aria-live="polite">
-        <div class="spinner"></div>
-        <p>Generating answer with Code Llama...</p>
+        <!-- Loading State -->
+        <div id="loading-state" class="state-box hidden" role="status" aria-live="polite">
+          <div class="spinner"></div>
+          <p>Generating answer with Code Llama...</p>
+        </div>
+
+        <!-- Error Banner -->
+        <div id="error-state" class="state-box error-box hidden" role="alert">
+          <span class="error-icon">⚠️</span>
+          <div class="error-content">
+            <strong>Error:</strong>
+            <span id="error-message"></span>
+          </div>
+        </div>
+
+        <!-- Response Area -->
+        <section id="response-container" class="response-section hidden" aria-live="polite">
+          <div class="response-header">
+            <h2>Assistant Response</h2>
+            <button type="button" id="copy-btn" class="secondary-btn">Copy</button>
+          </div>
+          <div id="response-output" class="response-text"></div>
+        </section>
       </div>
-
-      <!-- Error Banner -->
-      <div id="error-state" class="state-box error-box hidden" role="alert">
-        <span class="error-icon">⚠️</span>
-        <div class="error-content">
-          <strong>Error:</strong>
-          <span id="error-message"></span>
-        </div>
-      </div>
-
-      <!-- Response Area -->
-      <section id="response-container" class="response-section hidden" aria-live="polite">
-        <div class="response-header">
-          <h2>Assistant Response</h2>
-          <button type="button" id="copy-btn" class="secondary-btn">Copy</button>
-        </div>
-        <div id="response-output" class="response-text"></div>
-      </section>
     </main>
 
+    <!-- TAB 2: KNOWLEDGE BASE INSPECTOR (EXERCISE 2) -->
+    <section id="view-kb" class="tab-view hidden">
+      <!-- Knowledge Base Summary Bar -->
+      <div class="kb-summary-grid">
+        <div class="summary-card">
+          <span class="summary-label">Documents</span>
+          <span class="summary-value" id="stat-docs">-</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Total Chunks</span>
+          <span class="summary-value" id="stat-chunks">-</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Embedding Model</span>
+          <span class="summary-value font-mono" id="stat-model">-</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Vector Dimension</span>
+          <span class="summary-value font-mono" id="stat-dim">-</span>
+        </div>
+      </div>
+
+      <div class="kb-actions-bar">
+        <div class="kb-status-indicator">
+          <span class="status-dot" id="kb-status-dot"></span>
+          <span id="kb-status-text">Checking status...</span>
+        </div>
+        <button type="button" id="btn-reindex" class="primary-btn-sm">
+          ⚡ Re-index Knowledge Base
+        </button>
+      </div>
+
+      <!-- Document & Chunk Inspection Layout -->
+      <div class="kb-inspector-container">
+        <!-- Document Selection & Preview -->
+        <div class="kb-panel">
+          <div class="panel-header">
+            <h3>Original University Documents</h3>
+            <select id="doc-selector" aria-label="Select document to inspect"></select>
+          </div>
+          <div class="doc-meta-info" id="doc-meta-info"></div>
+          <pre class="doc-preview-box" id="doc-preview-content">Select a document to view content...</pre>
+        </div>
+
+        <!-- Generated Chunks & Vector Representation -->
+        <div class="kb-panel">
+          <div class="panel-header">
+            <h3>Generated Chunks & Vector Vectors</h3>
+            <span class="chunk-count-badge" id="visible-chunk-count">0 Chunks</span>
+          </div>
+          <div id="chunks-list" class="chunks-container">
+            <p class="empty-notice">Load or select a document to inspect its semantic chunks.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <footer class="app-footer">
-      <p>Exercise 1: Direct LLM Integration &bull; FastAPI + Ollama</p>
+      <p>University Knowledge Assistant &bull; Exercise 1 & 2 &bull; FastAPI + Ollama</p>
     </footer>
   </div>
 
