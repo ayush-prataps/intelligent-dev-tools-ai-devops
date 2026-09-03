@@ -3,7 +3,14 @@ from typing import Optional
 from fastapi import FastAPI, Query
 from fastapi.staticfiles import StaticFiles
 
-from app.schemas import AskRequest, AskResponse
+from app.schemas import (
+    AskRequest,
+    AskResponse,
+    RagRequest,
+    RagResponse,
+    CompareRequest,
+    CompareResponse
+)
 from app.services.ollama_service import generate_answer
 from app.services.knowledge_service import (
     get_raw_documents,
@@ -11,10 +18,11 @@ from app.services.knowledge_service import (
     load_knowledge_base,
     build_knowledge_base
 )
+from app.services.rag_service import run_rag_pipeline, run_comparison
 
 app = FastAPI(
     title="University Knowledge Assistant",
-    description="An AI assistant API powered by Code Llama and local vector knowledge base",
+    description="An AI assistant API powered by Code Llama, local embeddings, and RAG retrieval",
     version="1.0.0"
 )
 
@@ -97,6 +105,30 @@ async def trigger_indexing():
         "message": "Knowledge base indexed successfully.",
         "summary": result.get("metadata")
     }
+
+
+# ==========================================
+# Exercise 3: RAG & Comparison API Endpoints
+# ==========================================
+
+@app.post("/api/rag", response_model=RagResponse)
+async def ask_rag(payload: RagRequest):
+    """
+    Exercise 3 RAG Pipeline:
+    Question -> Query Embedding -> Cosine Similarity -> Top-K Retrieval -> Augmented Context -> Code Llama.
+    """
+    result = await run_rag_pipeline(payload.question, top_k=payload.top_k)
+    return RagResponse(**result)
+
+
+@app.post("/api/compare", response_model=CompareResponse)
+async def compare_answers(payload: CompareRequest):
+    """
+    Exercise 3 Comparison Pipeline:
+    Executes both Direct LLM and RAG pipelines to demonstrate how retrieved evidence impacts generation.
+    """
+    result = await run_comparison(payload.question, top_k=payload.top_k)
+    return CompareResponse(**result)
 
 
 # Mount static directory for frontend UI

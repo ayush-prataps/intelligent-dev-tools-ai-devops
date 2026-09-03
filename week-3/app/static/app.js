@@ -1,4 +1,4 @@
-// University Knowledge Assistant - Client-side logic (Exercise 1 & 2)
+// University Knowledge Assistant - Client-side logic (Exercise 1, 2 & 3)
 document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   // Tab Navigation
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==========================================
-  // Exercise 1: Ask Assistant Form Logic
+  // Exercise 1: Direct LLM Form Logic
   // ==========================================
   const form = document.getElementById("ask-form");
   const questionInput = document.getElementById("question-input");
@@ -41,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const responseOutput = document.getElementById("response-output");
   const copyBtn = document.getElementById("copy-btn");
 
-  // Allow Ctrl+Enter or Cmd+Enter to submit
   questionInput.addEventListener("keydown", (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
@@ -49,14 +48,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle form submission
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const question = questionInput.value.trim();
     if (!question) return;
 
-    // Reset UI states
     hideError();
     responseContainer.classList.add("hidden");
     setLoading(true);
@@ -64,9 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch("/api/ask", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question })
       });
 
@@ -78,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Render answer
       responseOutput.textContent = data.answer || "No response generated.";
       responseContainer.classList.remove("hidden");
     } catch (err) {
@@ -88,18 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Copy answer to clipboard
   copyBtn.addEventListener("click", async () => {
     const text = responseOutput.textContent;
     if (!text) return;
-
     try {
       await navigator.clipboard.writeText(text);
       const originalText = copyBtn.textContent;
       copyBtn.textContent = "Copied!";
-      setTimeout(() => {
-        copyBtn.textContent = originalText;
-      }, 2000);
+      setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
     } catch (err) {
       console.error("Failed to copy text: ", err);
     }
@@ -125,6 +115,170 @@ document.addEventListener("DOMContentLoaded", () => {
   function hideError() {
     errorState.classList.add("hidden");
     errorMessage.textContent = "";
+  }
+
+  // ===================================================
+  // Exercise 3: RAG & Comparison Logic
+  // ===================================================
+  const ragQuestionInput = document.getElementById("rag-question-input");
+  const ragTopK = document.getElementById("rag-top-k");
+  const btnRagAsk = document.getElementById("btn-rag-ask");
+  const btnRagCompare = document.getElementById("btn-rag-compare");
+  const ragLoadingState = document.getElementById("rag-loading-state");
+  const ragLoadingText = document.getElementById("rag-loading-text");
+  const ragErrorState = document.getElementById("rag-error-state");
+  const ragErrorMessage = document.getElementById("rag-error-message");
+
+  const ragSingleOutputContainer = document.getElementById("rag-single-output-container");
+  const ragSingleAnswer = document.getElementById("rag-single-answer");
+  const ragCopyBtn = document.getElementById("rag-copy-btn");
+
+  const ragCompareOutputContainer = document.getElementById("rag-compare-output-container");
+  const compareDirectAnswer = document.getElementById("compare-direct-answer");
+  const compareRagAnswer = document.getElementById("compare-rag-answer");
+
+  const retrievedContextContainer = document.getElementById("retrieved-context-container");
+  const retrievedChunksList = document.getElementById("retrieved-chunks-list");
+
+  // RAG Ask Action
+  btnRagAsk.addEventListener("click", async () => {
+    const question = ragQuestionInput.value.trim();
+    if (!question) {
+      showRagError("Please enter a question.");
+      return;
+    }
+
+    const topK = parseInt(ragTopK.value, 10) || 3;
+    hideRagError();
+    hideAllRagResults();
+    setRagLoading(true, "Searching vector embeddings & generating grounded answer with Code Llama...");
+
+    try {
+      const res = await fetch("/api/rag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, top_k: topK })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || `Server error (${res.status})`);
+      }
+
+      ragSingleAnswer.textContent = data.answer || "No answer generated.";
+      ragSingleOutputContainer.classList.remove("hidden");
+
+      renderRetrievedChunks(data.retrieved_chunks || []);
+    } catch (err) {
+      showRagError(err.message);
+    } finally {
+      setRagLoading(false);
+    }
+  });
+
+  // Comparison Action (Direct vs RAG)
+  btnRagCompare.addEventListener("click", async () => {
+    const question = ragQuestionInput.value.trim();
+    if (!question) {
+      showRagError("Please enter a question to compare.");
+      return;
+    }
+
+    const topK = parseInt(ragTopK.value, 10) || 3;
+    hideRagError();
+    hideAllRagResults();
+    setRagLoading(true, "Running Direct LLM and RAG pipelines in parallel for comparison...");
+
+    try {
+      const res = await fetch("/api/compare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, top_k: topK })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || `Server error (${res.status})`);
+      }
+
+      compareDirectAnswer.textContent = data.direct_answer || "No direct answer generated.";
+      compareRagAnswer.textContent = data.rag_answer || "No RAG answer generated.";
+      ragCompareOutputContainer.classList.remove("hidden");
+
+      renderRetrievedChunks(data.retrieved_chunks || []);
+    } catch (err) {
+      showRagError(err.message);
+    } finally {
+      setRagLoading(false);
+    }
+  });
+
+  ragCopyBtn.addEventListener("click", async () => {
+    const text = ragSingleAnswer.textContent;
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      const originalText = ragCopyBtn.textContent;
+      ragCopyBtn.textContent = "Copied!";
+      setTimeout(() => { ragCopyBtn.textContent = originalText; }, 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  });
+
+  function renderRetrievedChunks(chunks) {
+    retrievedChunksList.innerHTML = "";
+    if (!chunks || chunks.length === 0) {
+      retrievedContextContainer.classList.add("hidden");
+      return;
+    }
+
+    chunks.forEach((chunk) => {
+      const card = document.createElement("div");
+      card.className = "retrieved-chunk-card";
+
+      const scorePct = (chunk.similarity_score * 100).toFixed(1);
+
+      card.innerHTML = `
+        <div class="chunk-meta-row">
+          <span class="chunk-source-tag">${escapeHtml(chunk.doc_title)} &bull; ${escapeHtml(chunk.section)}</span>
+          <span class="similarity-score-badge">Cosine Similarity: ${scorePct}% (${chunk.similarity_score})</span>
+        </div>
+        <div class="chunk-snippet-text">${escapeHtml(chunk.text)}</div>
+      `;
+      retrievedChunksList.appendChild(card);
+    });
+
+    retrievedContextContainer.classList.remove("hidden");
+  }
+
+  function hideAllRagResults() {
+    ragSingleOutputContainer.classList.add("hidden");
+    ragCompareOutputContainer.classList.add("hidden");
+    retrievedContextContainer.classList.add("hidden");
+  }
+
+  function setRagLoading(isLoading, message = "") {
+    if (isLoading) {
+      ragLoadingState.classList.remove("hidden");
+      ragLoadingText.textContent = message;
+      btnRagAsk.disabled = true;
+      btnRagCompare.disabled = true;
+    } else {
+      ragLoadingState.classList.add("hidden");
+      btnRagAsk.disabled = false;
+      btnRagCompare.disabled = false;
+    }
+  }
+
+  function showRagError(msg) {
+    ragErrorMessage.textContent = msg;
+    ragErrorState.classList.remove("hidden");
+  }
+
+  function hideRagError() {
+    ragErrorState.classList.add("hidden");
+    ragErrorMessage.textContent = "";
   }
 
   // ===================================================
@@ -193,7 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
         docSelector.appendChild(opt);
       });
 
-      // Select first document by default
       if (documentsCache.length > 0) {
         displayDocument(documentsCache[0].id);
         fetchChunks(documentsCache[0].id);
@@ -265,7 +418,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
-      // Accordion toggle for vector inspection
       const vectorSummary = card.querySelector(".vector-summary");
       const vectorFull = card.querySelector(".vector-full");
       vectorSummary.addEventListener("click", () => {
@@ -276,7 +428,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Re-index action
   btnReindex.addEventListener("click", async () => {
     btnReindex.disabled = true;
     btnReindex.textContent = "⏳ Processing Chunks & Embeddings...";

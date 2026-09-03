@@ -15,7 +15,10 @@
       <!-- Tab Navigation -->
       <nav class="nav-tabs" role="tablist">
         <button type="button" class="tab-btn active" id="tab-ask" data-target="view-ask" role="tab" aria-selected="true">
-          💬 Ask Assistant (Ex 1)
+          💬 Direct LLM (Ex 1)
+        </button>
+        <button type="button" class="tab-btn" id="tab-rag" data-target="view-rag" role="tab" aria-selected="false">
+          🔍 RAG & Comparison (Ex 3)
         </button>
         <button type="button" class="tab-btn" id="tab-kb" data-target="view-kb" role="tab" aria-selected="false">
           📚 Knowledge Base (Ex 2)
@@ -23,11 +26,13 @@
       </nav>
     </header>
 
-    <!-- TAB 1: ASK ASSISTANT (EXERCISE 1) -->
+    <!-- ===================================================
+         TAB 1: DIRECT LLM (EXERCISE 1 - PRESERVED UNTOUCHED)
+         =================================================== -->
     <main id="view-ask" class="tab-view active">
       <div class="app-card">
         <form id="ask-form">
-          <label for="question-input" class="form-label">Your Question</label>
+          <label for="question-input" class="form-label">Your Question (Direct Prompt to Code Llama)</label>
           <textarea
             id="question-input"
             name="question"
@@ -60,7 +65,7 @@
         <!-- Response Area -->
         <section id="response-container" class="response-section hidden" aria-live="polite">
           <div class="response-header">
-            <h2>Assistant Response</h2>
+            <h2>Direct LLM Response</h2>
             <button type="button" id="copy-btn" class="secondary-btn">Copy</button>
           </div>
           <div id="response-output" class="response-text"></div>
@@ -68,7 +73,113 @@
       </div>
     </main>
 
-    <!-- TAB 2: KNOWLEDGE BASE INSPECTOR (EXERCISE 2) -->
+    <!-- ===================================================
+         TAB 2: RAG & COMPARISON (EXERCISE 3)
+         =================================================== -->
+    <section id="view-rag" class="tab-view hidden">
+      <div class="app-card">
+        <div class="rag-info-banner">
+          <span class="info-icon">ℹ️</span>
+          <div>
+            <strong>Retrieval-Augmented Generation (RAG):</strong>
+            Questions are converted to query vectors, matched against the university policy knowledge base via cosine similarity, and provided as grounded evidence to Code Llama.
+          </div>
+        </div>
+
+        <form id="rag-form">
+          <label for="rag-question-input" class="form-label">Ask About University Policies</label>
+          <textarea
+            id="rag-question-input"
+            name="rag-question"
+            rows="3"
+            placeholder="e.g. What is the minimum attendance required and can it be condoned on medical grounds?"
+            required
+          ></textarea>
+
+          <div class="rag-options-row">
+            <div class="top-k-selector">
+              <label for="rag-top-k">Retrieve Top-K Chunks:</label>
+              <select id="rag-top-k">
+                <option value="2">2 Chunks</option>
+                <option value="3" selected>3 Chunks</option>
+                <option value="5">5 Chunks</option>
+              </select>
+            </div>
+            <div class="rag-btn-group">
+              <button type="button" id="btn-rag-ask" class="primary-btn">
+                🔍 Ask with RAG
+              </button>
+              <button type="button" id="btn-rag-compare" class="compare-btn">
+                ⚖️ Compare Direct vs RAG
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- RAG Loading State -->
+        <div id="rag-loading-state" class="state-box hidden" role="status" aria-live="polite">
+          <div class="spinner"></div>
+          <p id="rag-loading-text">Performing vector similarity search & running Code Llama...</p>
+        </div>
+
+        <!-- RAG Error Banner -->
+        <div id="rag-error-state" class="state-box error-box hidden" role="alert">
+          <span class="error-icon">⚠️</span>
+          <div class="error-content">
+            <strong>Error:</strong>
+            <span id="rag-error-message"></span>
+          </div>
+        </div>
+
+        <!-- RAG Single Response Output -->
+        <div id="rag-single-output-container" class="hidden">
+          <section class="response-section">
+            <div class="response-header">
+              <h2>Grounded Assistant Response</h2>
+              <button type="button" id="rag-copy-btn" class="secondary-btn">Copy</button>
+            </div>
+            <div id="rag-single-answer" class="response-text"></div>
+          </section>
+        </div>
+
+        <!-- Comparison Side-by-Side Output -->
+        <div id="rag-compare-output-container" class="hidden">
+          <div class="compare-grid">
+            <div class="compare-column">
+              <div class="compare-col-header direct-header">
+                <h3>Direct LLM (Without Retrieval)</h3>
+                <span class="pill-badge">Exercise 1 Flow</span>
+              </div>
+              <p class="compare-hint">Raw model completion without policy knowledge base.</p>
+              <div id="compare-direct-answer" class="response-text compare-text"></div>
+            </div>
+
+            <div class="compare-column">
+              <div class="compare-col-header rag-header">
+                <h3>RAG Augmented (With Context)</h3>
+                <span class="pill-badge green-badge">Exercise 3 Flow</span>
+              </div>
+              <p class="compare-hint">Grounded response conditioned on retrieved policy chunks.</p>
+              <div id="compare-rag-answer" class="response-text compare-text"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Retrieved Context Chunks Display (Shows for both RAG and Compare) -->
+        <section id="retrieved-context-container" class="retrieved-context-section hidden">
+          <div class="context-header">
+            <h3>Retrieved Context Evidence (Cosine Similarity Ranking)</h3>
+            <span class="similarity-info-tag">Pure Python Cosine Similarity</span>
+          </div>
+          <p class="context-subtext">These policy chunks were retrieved from the knowledge base and injected into the prompt:</p>
+          <div id="retrieved-chunks-list" class="retrieved-chunks-grid"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ===================================================
+         TAB 3: KNOWLEDGE BASE INSPECTOR (EXERCISE 2)
+         =================================================== -->
     <section id="view-kb" class="tab-view hidden">
       <!-- Knowledge Base Summary Bar -->
       <div class="kb-summary-grid">
@@ -126,7 +237,7 @@
     </section>
 
     <footer class="app-footer">
-      <p>University Knowledge Assistant &bull; Exercise 1 & 2 &bull; FastAPI + Ollama</p>
+      <p>University Knowledge Assistant &bull; Exercises 1, 2 & 3 &bull; FastAPI + Ollama</p>
     </footer>
   </div>
 

@@ -84,7 +84,9 @@ def test_dynamic_dimension_detection_and_build():
     async def mock_get_embedding(text: str):
         return list(mock_vector)
 
-    with patch("app.services.knowledge_service.get_embedding", side_effect=mock_get_embedding):
+    test_kb_path = "/tmp/test_knowledge_base.json"
+    with patch("app.services.knowledge_service.get_embedding", side_effect=mock_get_embedding), \
+         patch("app.services.knowledge_service.KNOWLEDGE_BASE_PATH", test_kb_path):
         import asyncio
         kb = asyncio.run(build_knowledge_base())
         
@@ -95,6 +97,9 @@ def test_dynamic_dimension_detection_and_build():
         assert kb["metadata"]["total_documents"] == 5
         assert kb["metadata"]["total_chunks"] > 0
         assert len(kb["chunks"][0]["embedding"]) == custom_dim
+
+    if os.path.exists(test_kb_path):
+        os.remove(test_kb_path)
     print("PASS: test_dynamic_dimension_detection_and_build")
 
 
