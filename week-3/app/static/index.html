@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University Knowledge Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1>University Knowledge Assistant</h1>
+      <p class="subtitle">Ask questions about courses, programming, and academic topics powered by Code Llama</p>
+    </header>
+
+    <main class="app-card">
+      <form id="ask-form">
+        <label for="question-input" class="form-label">Your Question</label>
+        <textarea
+          id="question-input"
+          name="question"
+          rows="4"
+          placeholder="e.g. Explain how binary search trees work with a quick Python code example."
+          required
+        ></textarea>
+        
+        <div class="form-actions">
+          <span class="hint">Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit</span>
+          <button type="submit" id="ask-btn">Ask Assistant</button>
+        </div>
+      </form>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="state-box hidden" role="status" aria-live="polite">
+        <div class="spinner"></div>
+        <p>Generating answer with Code Llama...</p>
+      </div>
+
+      <!-- Error Banner -->
+      <div id="error-state" class="state-box error-box hidden" role="alert">
+        <span class="error-icon">⚠️</span>
+        <div class="error-content">
+          <strong>Error:</strong>
+          <span id="error-message"></span>
+        </div>
+      </div>
+
+      <!-- Response Area -->
+      <section id="response-container" class="response-section hidden" aria-live="polite">
+        <div class="response-header">
+          <h2>Assistant Response</h2>
+          <button type="button" id="copy-btn" class="secondary-btn">Copy</button>
+        </div>
+        <div id="response-output" class="response-text"></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Exercise 1: Direct LLM Integration &bull; FastAPI + Ollama</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
