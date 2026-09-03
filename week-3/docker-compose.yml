@@ -1,0 +1,55 @@
+services:
+  # 1. Application / Orchestrator Service (Gateway & Web UI)
+  application:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: university_assistant_app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - RETRIEVAL_SERVICE_URL=http://retrieval:8001
+      - LLM_SERVICE_URL=http://llm:8002
+      - SERVICE_TIMEOUT_SECONDS=120
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - retrieval
+      - llm
+    restart: unless-stopped
+
+  # 2. Retrieval Service (Query Embeddings & Cosine Similarity)
+  retrieval:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: university_assistant_retrieval
+    command: uvicorn services.retrieval_service.main:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - EMBEDDING_MODEL=nomic-embed-text
+      - SERVICE_TIMEOUT_SECONDS=120
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # 3. LLM Service (Ollama Code Llama Interface)
+  llm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: university_assistant_llm
+    command: uvicorn services.llm_service.main:app --host 0.0.0.0 --port 8002
+    ports:
+      - "8002:8002"
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=codellama:7b-instruct
+      - SERVICE_TIMEOUT_SECONDS=120
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

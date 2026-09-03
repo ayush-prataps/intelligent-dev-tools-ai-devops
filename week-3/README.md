@@ -9,7 +9,7 @@ The project is built progressively across 5 exercises:
 - **Exercise 2 (Completed)**: Knowledge Base creation (`Documents → Semantic Chunking → Ollama Embeddings → Vector Representation & Inspector UI`).
 - **Exercise 3 (Completed)**: Retrieval-Augmented Generation (RAG pipeline) & Comparative Analysis.
 - **Exercise 4 (Completed)**: Microservices Decomposition & HTTP Orchestration (`Application Gateway :8000 ➔ Retrieval Service :8001 ➔ LLM Service :8002`).
-- **Exercise 5**: Docker containerization & VM deployment.
+- **Exercise 5 (Completed)**: Docker Containerization & Multi-Service Compose Orchestration.
 
 ---
 
@@ -122,15 +122,15 @@ The Application Service records real execution timings using Python's monotonic 
 
 ---
 
-## 5. How to Run the Services
+## 5. Running Locally (Without Docker)
 
 ### Prerequisites
-1. Ensure Ollama is running with required models:
-   ```bash
-   ollama serve
-   ollama pull codellama:7b-instruct
-   ollama pull nomic-embed-text
-   ```
+Ensure Ollama is running with required models:
+```bash
+ollama serve
+ollama pull codellama:7b-instruct
+ollama pull nomic-embed-text
+```
 
 ### Option A: Start All Services via Helper Script (Recommended)
 Run the automated runner script which starts all three services simultaneously and handles clean shutdown on `Ctrl+C`:
@@ -154,35 +154,133 @@ PYTHONPATH=. uvicorn services.llm_service.main:app --port 8002
 PYTHONPATH=. uvicorn app.main:app --port 8000
 ```
 
-Open `http://localhost:8000` in your web browser:
-- **Tab 1 ("Direct LLM")**: Exercise 1 prompt interface (preserved).
-- **Tab 2 ("RAG & Compare")**: Exercise 3 RAG & side-by-side comparison (preserved).
-- **Tab 3 ("Orchestrated Flow")**: Exercise 4 live microservice topology cards, request flow diagram, and monotonic execution timeline.
-- **Tab 4 ("Knowledge Base")**: Exercise 2 document browser & vector inspector (preserved).
+---
+
+## 6. Exercise 5 — Dockerized Application
+
+In Exercise 5, the three microservices are containerized using **Docker** and orchestrated via **Docker Compose** on an Ubuntu VM.
+
+### Target Architecture
+
+```text
+User
+  ↓
+Application Container :8000
+  ↓ HTTP (http://retrieval:8001)
+Retrieval Container :8001
+  ↓ HTTP (http://host.docker.internal:11434)
+Ollama on Ubuntu VM :11434
+  ↓
+nomic-embed-text (Vector Embedding)
+  ↓
+knowledge_base.json / pure-Python Cosine Similarity
+  ↓
+Relevant Context Chunks
+  ↓
+Application Container :8000
+  ↓ HTTP (http://llm:8002)
+LLM Container :8002
+  ↓ HTTP (http://host.docker.internal:11434)
+Ollama on Ubuntu VM :11434
+  ↓
+Code Llama 7B (Inference)
+  ↓
+Application Container :8000
+  ↓
+User Response + Orchestration Trace
+```
+
+### Key Architectural Principles
+
+1. **Decoupled Containers**:
+   - `application`, `retrieval`, and `llm` run as lightweight, isolated Docker containers built from a clean `python:3.12-slim` base image.
+2. **Ollama Kept Outside Docker on VM**:
+   - Large language models (`codellama:7b-instruct`, 3.8 GB) and embedding weights require substantial RAM and disk.
+   - Ollama runs directly as a host service on the Ubuntu VM (`11434`), avoiding heavy container layer caching, disk bloat, and memory duplication.
+3. **Internal Container Networking & Service Discovery**:
+   - Inside Docker Compose, containers communicate via Docker's embedded DNS:
+     - Application reaches Retrieval at `http://retrieval:8001`.
+     - Application reaches LLM at `http://llm:8002`.
+     - `127.0.0.1` is **never** used for container-to-container traffic.
+4. **Host Gateway Connectivity**:
+   - To communicate with Ollama on the host VM, both the `retrieval` and `llm` containers use `extra_hosts`:
+     ```yaml
+     extra_hosts:
+       - "host.docker.internal:host-gateway"
+     ```
+   - Target URL: `http://host.docker.internal:11434`.
 
 ---
 
-## 6. Running Automated Tests
+### Docker Compose Commands
 
-Run the full verification suite across all 4 exercises:
+#### 1. Build Container Images
+```bash
+cd week-3
+docker compose build
+```
+
+#### 2. Start Services in Background
+```bash
+docker compose up -d
+```
+
+#### 3. Inspect Running Containers
+Verify all three containers are running:
+```bash
+docker compose ps
+```
+
+#### 4. Check Application Health Endpoints
+Verify application and service health via HTTP:
+```bash
+# Application Service (:8000)
+curl http://localhost:8000/api/health
+
+# Retrieval Service (:8001)
+curl http://localhost:8001/health
+
+# LLM Service (:8002)
+curl http://localhost:8002/health
+```
+
+#### 5. Execute Full Orchestration Request
+```bash
+curl -X POST http://localhost:8000/api/orchestrate \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is the minimum attendance requirement and can it be condoned?","top_k":2}'
+```
+
+#### 6. Stop Containers
+```bash
+docker compose down
+```
+
+---
+
+## 7. Running Automated Tests (Exercises 1–5)
+
+Run the full verification suite across all 5 exercises:
 ```bash
 cd week-3
 ./venv/bin/python test_exercise1.py
 ./venv/bin/python test_exercise2.py
 ./venv/bin/python test_exercise3.py
 ./venv/bin/python test_exercise4.py
+./venv/bin/python test_exercise5.py
 ```
 
-All 4 test suites will execute and pass with zero regressions.
+All 5 test suites will execute and pass (25/25 tests passing) with zero regressions.
 
 ---
 
-## 7. Viva / Demonstration Talking Points
+## 8. Viva / Demonstration Talking Points
 
-1. **Why decompose into microservices?**
-   - **Independent Scaling & Deployment**: The retrieval pipeline (I/O and vector math) and the LLM inference (heavy compute/memory) can scale independently on different machines or containers in Exercise 5.
-   - **Fault Isolation**: If the LLM service experiences heavy load, the Retrieval and Knowledge services remain operational.
-2. **What does the Orchestrator do?**
-   The Application Service acts as a coordinator / workflow orchestrator. It receives user requests, queries the Retrieval Service over HTTP, synthesizes the context-augmented prompt, delegates completion to the LLM Service over HTTP, records real execution latencies, and returns the coordinated result to the client.
-3. **How is service communication implemented?**
-   It uses real asynchronous HTTP REST calls via Python's `httpx` library. No microservice business logic is imported directly into `app/main.py`.
+1. **Why is Ollama running directly on the VM instead of inside Docker?**
+   - The Code Llama model is ~3.8 GB, and embedding weights require direct host memory allocation. Packaging the model inside a Docker image would drastically inflate image size, slow down deployment cycles, and exhaust the VM's disk and RAM.
+2. **How do containers discover each other in Docker Compose?**
+   - Docker Compose creates a default bridge network. Services use container service names (`retrieval`, `llm`) as hostnames with Docker's internal DNS resolving them to container IPs.
+3. **How do Linux containers communicate with the host VM?**
+   - Using `extra_hosts: ["host.docker.internal:host-gateway"]`, Docker maps `host.docker.internal` to the default network gateway of the host, enabling containerized services to communicate with `http://host.docker.internal:11434`.
+4. **What does the Orchestrator do?**
+   - The Application Service acts as a coordinator / workflow orchestrator. It receives user requests, queries the Retrieval Service over HTTP, synthesizes the context-augmented prompt, delegates completion to the LLM Service over HTTP, records real execution latencies using a monotonic clock, and returns the coordinated result to the client.

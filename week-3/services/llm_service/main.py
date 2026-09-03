@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 # Configuration
 OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
-DEFAULT_MODEL: str = os.getenv("MODEL_NAME", "codellama:7b-instruct")
+DEFAULT_MODEL: str = os.getenv("OLLAMA_MODEL", os.getenv("MODEL_NAME", "codellama:7b-instruct"))
 TIMEOUT_SECONDS: float = float(os.getenv("SERVICE_TIMEOUT_SECONDS", "120.0"))
 
 app = FastAPI(

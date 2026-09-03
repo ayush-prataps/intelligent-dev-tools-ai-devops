@@ -1,0 +1,22 @@
+# Version control
+.git/
+.gitignore
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+env/
+.pytest_cache/
+
+# Local environment files & logs
+.env
+*.log
+
+# IDE & OS specific files
+.DS_Store
+.idea/
+.vscode/
