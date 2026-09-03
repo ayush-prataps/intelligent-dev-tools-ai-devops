@@ -10,7 +10,7 @@
   <div class="container">
     <header class="app-header">
       <h1>University Knowledge Assistant</h1>
-      <p class="subtitle">Course rules, academic policies, and AI assistance</p>
+      <p class="subtitle">Course rules, academic policies, and AI microservice orchestration</p>
       
       <!-- Tab Navigation -->
       <nav class="nav-tabs" role="tablist">
@@ -18,7 +18,10 @@
           💬 Direct LLM (Ex 1)
         </button>
         <button type="button" class="tab-btn" id="tab-rag" data-target="view-rag" role="tab" aria-selected="false">
-          🔍 RAG & Comparison (Ex 3)
+          🔍 RAG & Compare (Ex 3)
+        </button>
+        <button type="button" class="tab-btn" id="tab-orchestrate" data-target="view-orchestrate" role="tab" aria-selected="false">
+          ⚙️ Orchestrated Flow (Ex 4)
         </button>
         <button type="button" class="tab-btn" id="tab-kb" data-target="view-kb" role="tab" aria-selected="false">
           📚 Knowledge Base (Ex 2)
@@ -178,7 +181,131 @@
     </section>
 
     <!-- ===================================================
-         TAB 3: KNOWLEDGE BASE INSPECTOR (EXERCISE 2)
+         TAB 3: ORCHESTRATED FLOW (EXERCISE 4)
+         =================================================== -->
+    <section id="view-orchestrate" class="tab-view hidden">
+      <!-- 3 Service Cards -->
+      <div class="services-topology-grid">
+        <div class="service-card" id="card-app-service">
+          <div class="service-card-header">
+            <span class="service-port">:8000</span>
+            <span class="service-status-dot active"></span>
+          </div>
+          <div class="service-card-title">Application Service</div>
+          <p class="service-card-desc">Gateway, Web UI & Orchestrator</p>
+          <span class="service-endpoint-tag">POST /api/orchestrate</span>
+        </div>
+
+        <div class="service-arrow">➔</div>
+
+        <div class="service-card" id="card-retrieval-service">
+          <div class="service-card-header">
+            <span class="service-port">:8001</span>
+            <span class="service-status-dot active"></span>
+          </div>
+          <div class="service-card-title">Retrieval Service</div>
+          <p class="service-card-desc">Embeddings & Cosine Search</p>
+          <span class="service-endpoint-tag">POST /retrieve</span>
+        </div>
+
+        <div class="service-arrow">➔</div>
+
+        <div class="service-card" id="card-llm-service">
+          <div class="service-card-header">
+            <span class="service-port">:8002</span>
+            <span class="service-status-dot active"></span>
+          </div>
+          <div class="service-card-title">LLM Service</div>
+          <p class="service-card-desc">Ollama Code Llama Interface</p>
+          <span class="service-endpoint-tag">POST /generate</span>
+        </div>
+      </div>
+
+      <div class="app-card" style="margin-top: 1rem;">
+        <!-- Architecture Workflow Diagram -->
+        <div class="flow-diagram-container">
+          <div class="flow-step-box">Browser</div>
+          <span class="flow-arrow">➔ :8000</span>
+          <div class="flow-step-box active-box">App Orchestrator</div>
+          <span class="flow-arrow">➔ :8001 /retrieve</span>
+          <div class="flow-step-box">Retrieval Svc</div>
+          <span class="flow-arrow">➔ :8002 /generate</span>
+          <div class="flow-step-box">LLM Svc</div>
+        </div>
+
+        <form id="orchestrate-form" style="margin-top: 1.25rem;">
+          <label for="orch-question-input" class="form-label">Ask Orchestrated Question</label>
+          <textarea
+            id="orch-question-input"
+            rows="3"
+            placeholder="e.g. What is the minimum attendance requirement and what happens if I am debarred?"
+            required
+          ></textarea>
+
+          <div class="rag-options-row">
+            <div class="top-k-selector">
+              <label for="orch-top-k">Top-K Context Chunks:</label>
+              <select id="orch-top-k">
+                <option value="2">2 Chunks</option>
+                <option value="3" selected>3 Chunks</option>
+                <option value="4">4 Chunks</option>
+              </select>
+            </div>
+            <button type="button" id="btn-orchestrate-run" class="primary-btn">
+              ⚡ Execute Orchestrated Pipeline
+            </button>
+          </div>
+        </form>
+
+        <!-- Orchestration Loading State -->
+        <div id="orch-loading-state" class="state-box hidden" role="status" aria-live="polite">
+          <div class="spinner"></div>
+          <p id="orch-loading-text">Orchestrating request across microservices (:8000 ➔ :8001 ➔ :8002)...</p>
+        </div>
+
+        <!-- Orchestration Error Banner -->
+        <div id="orch-error-state" class="state-box error-box hidden" role="alert">
+          <span class="error-icon">⚠️</span>
+          <div class="error-content">
+            <strong>Orchestration Error:</strong>
+            <span id="orch-error-message"></span>
+          </div>
+        </div>
+
+        <!-- Orchestration Output View -->
+        <div id="orch-output-container" class="hidden">
+          <!-- Final Answer -->
+          <section class="response-section">
+            <div class="response-header">
+              <h2>Orchestrated Grounded Answer</h2>
+              <button type="button" id="orch-copy-btn" class="secondary-btn">Copy</button>
+            </div>
+            <div id="orch-answer-text" class="response-text"></div>
+          </section>
+
+          <!-- Orchestration Trace Timeline -->
+          <section class="orchestration-trace-section">
+            <div class="trace-header-row">
+              <h3>Orchestration Trace (Monotonic Timings)</h3>
+              <span class="total-time-badge" id="orch-total-time">Total: 0.0 ms</span>
+            </div>
+            <p class="context-subtext">Verified HTTP communication trace recorded by the Application Service:</p>
+            <div class="timeline-container" id="orch-timeline-list"></div>
+          </section>
+
+          <!-- Retrieved Chunks -->
+          <section class="retrieved-context-section">
+            <div class="context-header">
+              <h3>Chunks Retrieved from Retrieval Service (:8001)</h3>
+            </div>
+            <div id="orch-chunks-list" class="retrieved-chunks-grid"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================
+         TAB 4: KNOWLEDGE BASE INSPECTOR (EXERCISE 2)
          =================================================== -->
     <section id="view-kb" class="tab-view hidden">
       <!-- Knowledge Base Summary Bar -->
@@ -237,7 +364,7 @@
     </section>
 
     <footer class="app-footer">
-      <p>University Knowledge Assistant &bull; Exercises 1, 2 & 3 &bull; FastAPI + Ollama</p>
+      <p>University Knowledge Assistant &bull; Exercises 1–4 &bull; FastAPI Microservices &bull; Ollama</p>
     </footer>
   </div>
 

@@ -7,134 +7,182 @@ The **University Knowledge Assistant** is an educational AI application designed
 The project is built progressively across 5 exercises:
 - **Exercise 1 (Completed)**: Direct LLM query flow (`Browser UI → FastAPI → Ollama → Code Llama → Browser`).
 - **Exercise 2 (Completed)**: Knowledge Base creation (`Documents → Semantic Chunking → Ollama Embeddings → Vector Representation & Inspector UI`).
-- **Exercise 3 (Completed)**: Retrieval-Augmented Generation (RAG pipeline) & Comparative Analysis (`Question → Query Embedding → Pure Python Cosine Similarity → Top-K Retrieval → Augmented Context → Code Llama → Grounded Answer`).
-- **Exercise 4**: Service separation & modularization.
+- **Exercise 3 (Completed)**: Retrieval-Augmented Generation (RAG pipeline) & Comparative Analysis.
+- **Exercise 4 (Completed)**: Microservices Decomposition & HTTP Orchestration (`Application Gateway :8000 ➔ Retrieval Service :8001 ➔ LLM Service :8002`).
 - **Exercise 5**: Docker containerization & VM deployment.
 
 ---
 
-## 2. Exercise 3: Retrieval & RAG Pipeline
+## 2. Exercise 4: Microservices & Orchestration Architecture
 
-In Exercise 3, the application integrates retrieval into the question-answering workflow:
-Instead of asking the LLM in isolation (where it may produce generic or hallucinated answers for university-specific rules), the system retrieves relevant policy chunks from `data/knowledge_base.json` using pure-Python cosine vector similarity and augments the model prompt with this factual context.
+In Exercise 4, the application is decomposed into three independently runnable, decoupled FastAPI services communicating over HTTP REST APIs using `httpx`:
 
-### Complete RAG Request Flow:
 ```text
-Student Question: "What is the minimum attendance requirement and can it be condoned?"
-                                 │
-                                 ▼
-                     [app/services/rag_service.py]
-                                 │
-      1. Query Vector Generation:│
-         POST /api/embeddings    │ (via Ollama HTTP API)
-         Model: nomic-embed-text │
-                                 ▼
-                         Query Vector (768D)
-                                 │
-      2. Vector Similarity Search:
-         Cosine similarity against all 20 chunks in data/knowledge_base.json
-                                 ▼
-                      Ranked Chunks by Similarity:
-        Rank 1: attendance_policy_chunk_01 (Score: 0.8020)
-        Rank 2: attendance_policy_chunk_02 (Score: 0.7666)
-                                 │
-      3. Top-K Context Selection:
-         [University Attendance Policy > Minimum Attendance Requirement] (75% rule)
-         [University Attendance Policy > Condonation of Attendance Shortage] (65%-74.9% rule)
-                                 │
-      4. Augmented Prompt Synthesis:
-         "Answer the question using ONLY the provided university policy context..."
-                                 │
-      5. Ollama Inference:
-         POST /api/generate (codellama:7b-instruct)
-                                 │
-                                 ▼
-                         Grounded Response
+Browser (Web Client)
+       │
+       │  POST /api/orchestrate { "question": "...", "top_k": 3 }
+       ▼
+[Application / Orchestrator Service] (Port :8000)
+       │
+       ├── 1. HTTP POST http://127.0.0.1:8001/retrieve
+       │      Payload:  { "query": "...", "top_k": 3 }
+       │      Response: { "retrieved_chunks": [...] }
+       │      ↓
+       │   [Retrieval Service] (Port :8001)
+       │   - Generates query vector via Ollama nomic-embed-text
+       │   - Computes pure Python Cosine Similarity over data/knowledge_base.json
+       │   - Returns top-K ranked chunks
+       │
+       ├── 2. Constructs Context-Augmented Prompt
+       │
+       └── 3. HTTP POST http://127.0.0.1:8002/generate
+              Payload:  { "prompt": "Context + Question...", "model": "codellama:7b-instruct" }
+              Response: { "answer": "..." }
+              ↓
+           [LLM Service] (Port :8002)
+           - Calls Ollama HTTP API (/api/generate)
+           - Streams / returns Code Llama inference
+       │
+       ▼
+Application Service assembles final response with Monotonic Execution Trace
+       │
+       ▼
+Browser displays Grounded Answer + Live Orchestration Trace Timeline
 ```
 
 ---
 
-## 3. Pure Python Cosine Similarity
+## 3. Service Specifications & Ports
 
-Vector similarity is calculated in `app/services/retrieval_service.py` without requiring external ML libraries or vector databases:
-
-$$\text{Cosine Similarity}(\vec{u}, \vec{v}) = \frac{\vec{u} \cdot \vec{v}}{\|\vec{u}\| \|\vec{v}\|} = \frac{\sum_{i=1}^{n} u_i v_i}{\sqrt{\sum_{i=1}^{n} u_i^2} \cdot \sqrt{\sum_{i=1}^{n} v_i^2}}$$
-
-- **Dot Product ($\vec{u} \cdot \vec{v}$)**: Measures how much the two vectors point in the same direction.
-- **Euclidean Norms ($\|\vec{u}\|, \|\vec{v}\|$)**: Normalizes for vector magnitudes.
-- **Score**: Ranges from -1.0 to 1.0 (typically 0.0 to 1.0 for normalized text embeddings). Higher scores indicate closer semantic meaning.
+| Service | Port | Directory | Endpoints | Responsibility |
+|---|---|---|---|---|
+| **Application Service** | `8000` | `app/` | `GET /`<br>`POST /api/orchestrate`<br>`POST /api/ask`<br>`POST /api/rag`<br>`POST /api/compare` | Serves Web UI, acts as API Gateway, coordinates microservice pipeline, and records execution trace. |
+| **Retrieval Service** | `8001` | `services/retrieval_service/` | `GET /health`<br>`POST /retrieve` | Standalone service: converts query to embeddings, executes cosine similarity over `knowledge_base.json`, returns ranked chunks. |
+| **LLM Service** | `8002` | `services/llm_service/` | `GET /health`<br>`POST /generate` | Standalone service: dedicated interface to Ollama HTTP API for Code Llama completion. |
 
 ---
 
-## 4. Comparing Direct LLM vs. RAG
+## 4. Orchestration Trace & Monotonic Timings
 
-A core objective of Exercise 3 is demonstrating how responses differ when grounded context is provided versus when the LLM is queried blindly.
+The Application Service records real execution timings using Python's monotonic clock (`time.perf_counter()`). Every response from `POST /api/orchestrate` includes an exact execution trace:
 
-| Dimension | Direct LLM (Exercise 1) | RAG-Augmented LLM (Exercise 3) |
-|---|---|---|
-| **Input to LLM** | User question alone | User question + Top-K retrieved policy chunks |
-| **Knowledge Source** | Model pre-training weights only | Local `knowledge_base.json` policy documents |
-| **University Specifics** | Often gives generic advice or hallucinated criteria | Cites exact percentages (75% mandatory, 65% condonation) |
-| **Authority References** | General speculation | Cites specific roles: Dean of Academic Affairs, Review Board |
-| **Evidence / Auditability**| None; black box | Every retrieved chunk is inspectable with its similarity score |
-
-> [!NOTE]
-> RAG grounds generation in retrieved evidence and drastically reduces hallucinations for domain-specific tasks, but it does not mathematically guarantee 100% factual correctness. The model must still follow instructions faithfully.
+```json
+{
+  "question": "What is the minimum attendance requirement?",
+  "answer": "The minimum attendance requirement is 75%...",
+  "retrieved_chunks": [
+    {
+      "chunk_id": "attendance_policy_chunk_01",
+      "doc_title": "University Attendance Policy",
+      "section": "Minimum Attendance Requirement",
+      "similarity_score": 0.825,
+      "text": "..."
+    }
+  ],
+  "orchestration_trace": [
+    {
+      "step": 1,
+      "service": "Application Service",
+      "action": "Received question and initiated workflow",
+      "status": "completed",
+      "elapsed_ms": 0.0
+    },
+    {
+      "step": 2,
+      "service": "Retrieval Service",
+      "action": "POST http://127.0.0.1:8001/retrieve",
+      "status": "completed",
+      "elapsed_ms": 634.5
+    },
+    {
+      "step": 3,
+      "service": "Application Service",
+      "action": "Constructed augmented prompt using 2 context chunks",
+      "status": "completed",
+      "elapsed_ms": 0.01
+    },
+    {
+      "step": 4,
+      "service": "LLM Service",
+      "action": "POST http://127.0.0.1:8002/generate",
+      "status": "completed",
+      "elapsed_ms": 55497.0
+    },
+    {
+      "step": 5,
+      "service": "Application Service",
+      "action": "Assembled final orchestrated response with execution trace",
+      "status": "completed",
+      "elapsed_ms": 0.0
+    }
+  ],
+  "total_elapsed_ms": 56131.6
+}
+```
 
 ---
 
-## 5. API Endpoints
+## 5. How to Run the Services
 
-| Method | Endpoint | Exercise | Description |
-|---|---|---|---|
-| `GET` | `/api/health` | Ex 1 | Health check (`{"status": "ok"}`) |
-| `POST` | `/api/ask` | Ex 1 | Direct LLM completion without retrieval |
-| `GET` | `/api/knowledge/summary` | Ex 2 | Summary of documents, chunks, and vector dimension |
-| `GET` | `/api/knowledge/documents` | Ex 2 | List raw markdown documents and content |
-| `GET` | `/api/knowledge/chunks` | Ex 2 | List chunks with vector samples |
-| `POST` | `/api/knowledge/index` | Ex 2 | Rebuild chunks and embeddings |
-| `POST` | `/api/rag` | Ex 3 | End-to-end RAG question answering |
-| `POST` | `/api/compare` | Ex 3 | Side-by-side comparison of Direct LLM vs RAG |
+### Prerequisites
+1. Ensure Ollama is running with required models:
+   ```bash
+   ollama serve
+   ollama pull codellama:7b-instruct
+   ollama pull nomic-embed-text
+   ```
 
----
-
-## 6. How to Run & Verify
-
-### 1. Start Ollama and Verify Models
-Ensure Ollama is running with both required models:
+### Option A: Start All Services via Helper Script (Recommended)
+Run the automated runner script which starts all three services simultaneously and handles clean shutdown on `Ctrl+C`:
 ```bash
-ollama serve
-ollama list
-# Ensure codellama:7b-instruct and nomic-embed-text are listed
+cd week-3
+./run_services.sh
 ```
 
-### 2. Start the FastAPI Application
+### Option B: Start Services Individually (Separate Terminals)
 ```bash
 cd week-3
 source venv/bin/activate
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Terminal 1: Retrieval Service (:8001)
+PYTHONPATH=. uvicorn services.retrieval_service.main:app --port 8001
+
+# Terminal 2: LLM Service (:8002)
+PYTHONPATH=. uvicorn services.llm_service.main:app --port 8002
+
+# Terminal 3: Application Service (:8000)
+PYTHONPATH=. uvicorn app.main:app --port 8000
 ```
 
-Open `http://localhost:8000` in your browser:
-- **Tab 1 ("Direct LLM")**: Ask questions without retrieval (Exercise 1).
-- **Tab 2 ("RAG & Comparison")**: Ask questions with RAG or click **"Compare Direct vs RAG"** to observe side-by-side responses and retrieved context chunks (Exercise 3).
-- **Tab 3 ("Knowledge Base")**: Inspect documents, chunks, and vectors (Exercise 2).
+Open `http://localhost:8000` in your web browser:
+- **Tab 1 ("Direct LLM")**: Exercise 1 prompt interface (preserved).
+- **Tab 2 ("RAG & Compare")**: Exercise 3 RAG & side-by-side comparison (preserved).
+- **Tab 3 ("Orchestrated Flow")**: Exercise 4 live microservice topology cards, request flow diagram, and monotonic execution timeline.
+- **Tab 4 ("Knowledge Base")**: Exercise 2 document browser & vector inspector (preserved).
 
-### 3. Run All Automated Test Suites
+---
+
+## 6. Running Automated Tests
+
+Run the full verification suite across all 4 exercises:
 ```bash
 cd week-3
 ./venv/bin/python test_exercise1.py
 ./venv/bin/python test_exercise2.py
 ./venv/bin/python test_exercise3.py
+./venv/bin/python test_exercise4.py
 ```
+
+All 4 test suites will execute and pass with zero regressions.
 
 ---
 
 ## 7. Viva / Demonstration Talking Points
 
-1. **How does the RAG pipeline work step-by-step?**
-   The student asks a question $\rightarrow$ FastAPI sends the text to Ollama's `nomic-embed-text` $\rightarrow$ a 768-dimensional query vector is generated $\rightarrow$ pure Python computes cosine similarity against all 20 chunks $\rightarrow$ top-K chunks are retrieved $\rightarrow$ an augmented prompt is created with the evidence $\rightarrow$ Code Llama generates an answer grounded in the retrieved text.
-2. **Why pure Python cosine similarity?**
-   It eliminates the need for heavyweight vector databases (Chroma, Pinecone) or compiled C++ libraries during this stage, making the entire search process transparent and easily explainable in ~15 lines of code.
-3. **How does RAG change the response?**
-   Without RAG, Code Llama cannot know the specific rules of our university. With RAG, it references exact numbers (75% attendance rule, 65% condonation floor, 7-day medical certificate submission window, and Dean of Academic Affairs).
+1. **Why decompose into microservices?**
+   - **Independent Scaling & Deployment**: The retrieval pipeline (I/O and vector math) and the LLM inference (heavy compute/memory) can scale independently on different machines or containers in Exercise 5.
+   - **Fault Isolation**: If the LLM service experiences heavy load, the Retrieval and Knowledge services remain operational.
+2. **What does the Orchestrator do?**
+   The Application Service acts as a coordinator / workflow orchestrator. It receives user requests, queries the Retrieval Service over HTTP, synthesizes the context-augmented prompt, delegates completion to the LLM Service over HTTP, records real execution latencies, and returns the coordinated result to the client.
+3. **How is service communication implemented?**
+   It uses real asynchronous HTTP REST calls via Python's `httpx` library. No microservice business logic is imported directly into `app/main.py`.

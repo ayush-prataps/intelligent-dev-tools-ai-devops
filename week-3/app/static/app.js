@@ -1,4 +1,4 @@
-// University Knowledge Assistant - Client-side logic (Exercise 1, 2 & 3)
+// University Knowledge Assistant - Client-side logic (Exercise 1, 2, 3 & 4)
 document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   // Tab Navigation
@@ -140,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const retrievedContextContainer = document.getElementById("retrieved-context-container");
   const retrievedChunksList = document.getElementById("retrieved-chunks-list");
 
-  // RAG Ask Action
   btnRagAsk.addEventListener("click", async () => {
     const question = ragQuestionInput.value.trim();
     if (!question) {
@@ -168,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ragSingleAnswer.textContent = data.answer || "No answer generated.";
       ragSingleOutputContainer.classList.remove("hidden");
 
-      renderRetrievedChunks(data.retrieved_chunks || []);
+      renderRetrievedChunks(data.retrieved_chunks || [], retrievedChunksList, retrievedContextContainer);
     } catch (err) {
       showRagError(err.message);
     } finally {
@@ -176,7 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Comparison Action (Direct vs RAG)
   btnRagCompare.addEventListener("click", async () => {
     const question = ragQuestionInput.value.trim();
     if (!question) {
@@ -205,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
       compareRagAnswer.textContent = data.rag_answer || "No RAG answer generated.";
       ragCompareOutputContainer.classList.remove("hidden");
 
-      renderRetrievedChunks(data.retrieved_chunks || []);
+      renderRetrievedChunks(data.retrieved_chunks || [], retrievedChunksList, retrievedContextContainer);
     } catch (err) {
       showRagError(err.message);
     } finally {
@@ -226,10 +224,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  function renderRetrievedChunks(chunks) {
-    retrievedChunksList.innerHTML = "";
+  function renderRetrievedChunks(chunks, targetList, targetContainer) {
+    targetList.innerHTML = "";
     if (!chunks || chunks.length === 0) {
-      retrievedContextContainer.classList.add("hidden");
+      targetContainer.classList.add("hidden");
       return;
     }
 
@@ -246,10 +244,10 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         <div class="chunk-snippet-text">${escapeHtml(chunk.text)}</div>
       `;
-      retrievedChunksList.appendChild(card);
+      targetList.appendChild(card);
     });
 
-    retrievedContextContainer.classList.remove("hidden");
+    targetContainer.classList.remove("hidden");
   }
 
   function hideAllRagResults() {
@@ -279,6 +277,119 @@ document.addEventListener("DOMContentLoaded", () => {
   function hideRagError() {
     ragErrorState.classList.add("hidden");
     ragErrorMessage.textContent = "";
+  }
+
+  // ===================================================
+  // Exercise 4: Orchestrated Flow Logic
+  // ===================================================
+  const orchQuestionInput = document.getElementById("orch-question-input");
+  const orchTopK = document.getElementById("orch-top-k");
+  const btnOrchestrateRun = document.getElementById("btn-orchestrate-run");
+  const orchLoadingState = document.getElementById("orch-loading-state");
+  const orchLoadingText = document.getElementById("orch-loading-text");
+  const orchErrorState = document.getElementById("orch-error-state");
+  const orchErrorMessage = document.getElementById("orch-error-message");
+
+  const orchOutputContainer = document.getElementById("orch-output-container");
+  const orchAnswerText = document.getElementById("orch-answer-text");
+  const orchCopyBtn = document.getElementById("orch-copy-btn");
+  const orchTotalTime = document.getElementById("orch-total-time");
+  const orchTimelineList = document.getElementById("orch-timeline-list");
+  const orchChunksList = document.getElementById("orch-chunks-list");
+
+  btnOrchestrateRun.addEventListener("click", async () => {
+    const question = orchQuestionInput.value.trim();
+    if (!question) {
+      showOrchError("Please enter a question to orchestrate.");
+      return;
+    }
+
+    const topK = parseInt(orchTopK.value, 10) || 3;
+    hideOrchError();
+    orchOutputContainer.classList.add("hidden");
+    setOrchLoading(true, "Orchestrating request across microservices (:8000 ➔ :8001 ➔ :8002)...");
+
+    try {
+      const res = await fetch("/api/orchestrate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, top_k: topK })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || `Server error (${res.status})`);
+      }
+
+      // 1. Render Grounded Answer
+      orchAnswerText.textContent = data.answer || "No answer generated.";
+
+      // 2. Render Total Time Badge
+      orchTotalTime.textContent = `Total Latency: ${data.total_elapsed_ms.toFixed(1)} ms`;
+
+      // 3. Render Orchestration Trace Timeline
+      renderTimeline(data.orchestration_trace || []);
+
+      // 4. Render Retrieved Chunks
+      renderRetrievedChunks(data.retrieved_chunks || [], orchChunksList, orchChunksList.parentElement);
+
+      orchOutputContainer.classList.remove("hidden");
+    } catch (err) {
+      showOrchError(err.message);
+    } finally {
+      setOrchLoading(false);
+    }
+  });
+
+  function renderTimeline(trace) {
+    orchTimelineList.innerHTML = "";
+    trace.forEach((step) => {
+      const item = document.createElement("div");
+      item.className = "timeline-item";
+
+      item.innerHTML = `
+        <span class="timeline-step-badge">Step ${step.step}</span>
+        <span class="timeline-service-name">${escapeHtml(step.service)}</span>
+        <span class="timeline-action-text">${escapeHtml(step.action)}</span>
+        <span class="timeline-time-tag">${step.elapsed_ms.toFixed(1)} ms</span>
+        <span class="timeline-status-tag">✓ ${escapeHtml(step.status)}</span>
+      `;
+      orchTimelineList.appendChild(item);
+    });
+  }
+
+  orchCopyBtn.addEventListener("click", async () => {
+    const text = orchAnswerText.textContent;
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      const originalText = orchCopyBtn.textContent;
+      orchCopyBtn.textContent = "Copied!";
+      setTimeout(() => { orchCopyBtn.textContent = originalText; }, 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  });
+
+  function setOrchLoading(isLoading, message = "") {
+    if (isLoading) {
+      orchLoadingState.classList.remove("hidden");
+      orchLoadingText.textContent = message;
+      btnOrchestrateRun.disabled = true;
+    } else {
+      orchLoadingState.classList.add("hidden");
+      btnOrchestrateRun.disabled = false;
+    }
+  }
+
+  function showOrchError(msg) {
+    orchErrorMessage.textContent = msg;
+    orchErrorState.classList.remove("hidden");
+  }
+
+  function hideOrchError() {
+    orchErrorState.classList.add("hidden");
+    orchErrorMessage.textContent = "";
   }
 
   // ===================================================

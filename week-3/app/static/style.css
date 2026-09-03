@@ -1,4 +1,4 @@
-/* University Knowledge Assistant - Exercise 1, 2 & 3 Styling */
+/* University Knowledge Assistant - Exercise 1, 2, 3 & 4 Styling */
 :root {
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
@@ -32,7 +32,7 @@ body {
 }
 
 .container {
-  max-width: 900px;
+  max-width: 920px;
   margin: 0 auto;
 }
 
@@ -61,6 +61,7 @@ body {
   gap: 0.5rem;
   border-bottom: 2px solid var(--border-color);
   padding-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .tab-btn {
@@ -69,7 +70,7 @@ body {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-muted);
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.85rem;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -211,7 +212,7 @@ button {
   gap: 0.75rem;
 }
 
-#loading-state, #rag-loading-state {
+#loading-state, #rag-loading-state, #orch-loading-state {
   background-color: #eff6ff;
   border: 1px solid #bfdbfe;
   color: #1e40af;
@@ -242,8 +243,8 @@ button {
 
 /* Response Section */
 .response-section {
-  margin-top: 1.75rem;
-  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border-color);
 }
 
@@ -310,7 +311,6 @@ button {
   gap: 0.65rem;
 }
 
-/* Side-by-Side Comparison Layout */
 .compare-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -376,10 +376,9 @@ button {
   min-height: 180px;
 }
 
-/* Retrieved Context Section */
 .retrieved-context-section {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border-color);
 }
 
@@ -407,7 +406,7 @@ button {
 .context-subtext {
   font-size: 0.85rem;
   color: var(--text-muted);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .retrieved-chunks-grid {
@@ -454,6 +453,207 @@ button {
   padding: 0.6rem;
   border-radius: 4px;
   border: 1px solid #f1f5f9;
+}
+
+/* ===================================================
+   Exercise 4: Microservices & Orchestration Styles
+   =================================================== */
+
+.services-topology-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.service-card {
+  flex: 1;
+  min-width: 200px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.service-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.service-port {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: #eff6ff;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+}
+
+.service-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--success-color);
+}
+
+.service-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.service-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.service-endpoint-tag {
+  font-size: 0.72rem;
+  font-family: ui-monospace, monospace;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.service-arrow {
+  color: var(--text-muted);
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 680px) {
+  .service-arrow { display: none; }
+}
+
+.flow-diagram-container {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.flow-step-box {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.flow-step-box.active-box {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: var(--primary-color);
+}
+
+.flow-arrow {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Orchestration Trace Section */
+.orchestration-trace-section {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.trace-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.trace-header-row h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.total-time-badge {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: #ecfdf5;
+  color: #047857;
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid #a7f3d0;
+}
+
+.timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.85rem;
+}
+
+.timeline-step-badge {
+  font-family: ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 0.75rem;
+  background: #eff6ff;
+  color: var(--primary-color);
+  border: 1px solid #bfdbfe;
+  padding: 0.15rem 0.45rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.timeline-service-name {
+  font-weight: 600;
+  color: var(--text-main);
+  min-width: 140px;
+}
+
+.timeline-action-text {
+  color: #334155;
+  flex: 1;
+}
+
+.timeline-time-tag {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: #f1f5f9;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.timeline-status-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--success-color);
+  white-space: nowrap;
 }
 
 /* ===================================================

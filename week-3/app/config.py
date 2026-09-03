@@ -20,3 +20,15 @@ DOCUMENTS_DIR: str = os.getenv("DOCUMENTS_DIR", os.path.join(BASE_DIR, "data", "
 KNOWLEDGE_BASE_PATH: str = os.getenv(
     "KNOWLEDGE_BASE_PATH", os.path.join(BASE_DIR, "data", "knowledge_base.json")
 )
+
+# Exercise 4: Microservice endpoints
+RETRIEVAL_SERVICE_URL: str = os.getenv(
+    "RETRIEVAL_SERVICE_URL", "http://127.0.0.1:8001"
+).rstrip("/")
+
+LLM_SERVICE_URL: str = os.getenv(
+    "LLM_SERVICE_URL", "http://127.0.0.1:8002"
+).rstrip("/")
+
+# Microservice HTTP communication timeout in seconds
+SERVICE_TIMEOUT_SECONDS: float = float(os.getenv("SERVICE_TIMEOUT_SECONDS", "120.0"))

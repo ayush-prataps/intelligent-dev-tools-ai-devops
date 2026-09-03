@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -77,3 +77,59 @@ class CompareResponse(BaseModel):
     direct_answer: str
     rag_answer: str
     retrieved_chunks: List[RetrievedChunk]
+
+
+# ==========================================
+# Exercise 4 Schemas (Microservices & Trace)
+# ==========================================
+
+class RetrieveRequest(BaseModel):
+    query: str = Field(..., min_length=1, description="Query to search knowledge base")
+    top_k: int = Field(default=3, ge=1, le=10, description="Number of chunks to return")
+
+
+class RetrieveResponse(BaseModel):
+    query: str
+    top_k: int
+    retrieved_chunks: List[RetrievedChunk]
+
+
+class GenerateRequest(BaseModel):
+    prompt: str = Field(..., min_length=1, description="Prompt text to feed into LLM")
+    model: Optional[str] = Field(default=None, description="Optional target LLM model name")
+
+
+class GenerateResponse(BaseModel):
+    answer: str
+    model: str
+
+
+class TraceStep(BaseModel):
+    step: int
+    service: str
+    action: str
+    status: str
+    elapsed_ms: float
+
+
+class OrchestrateRequest(BaseModel):
+    question: str = Field(
+        ...,
+        min_length=1,
+        description="Question to orchestrate across microservices",
+        examples=["What is the minimum attendance requirement and can it be condoned?"]
+    )
+    top_k: int = Field(
+        default=3,
+        ge=1,
+        le=10,
+        description="Number of context chunks to retrieve"
+    )
+
+
+class OrchestrateResponse(BaseModel):
+    question: str
+    answer: str
+    retrieved_chunks: List[RetrievedChunk]
+    orchestration_trace: List[TraceStep]
+    total_elapsed_ms: float

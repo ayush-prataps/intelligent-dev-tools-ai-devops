@@ -9,7 +9,9 @@ from app.schemas import (
     RagRequest,
     RagResponse,
     CompareRequest,
-    CompareResponse
+    CompareResponse,
+    OrchestrateRequest,
+    OrchestrateResponse
 )
 from app.services.ollama_service import generate_answer
 from app.services.knowledge_service import (
@@ -19,10 +21,11 @@ from app.services.knowledge_service import (
     build_knowledge_base
 )
 from app.services.rag_service import run_rag_pipeline, run_comparison
+from app.services.orchestrator import orchestrate_workflow
 
 app = FastAPI(
     title="University Knowledge Assistant",
-    description="An AI assistant API powered by Code Llama, local embeddings, and RAG retrieval",
+    description="An AI assistant API powered by Code Llama, local embeddings, RAG retrieval, and microservice orchestration",
     version="1.0.0"
 )
 
@@ -71,7 +74,6 @@ def list_chunks(doc_id: Optional[str] = Query(None, description="Filter chunks b
     if doc_id:
         chunks = [c for c in chunks if c.get("doc_id") == doc_id]
 
-    # Present chunks with clean vector inspection previews
     inspected_chunks = []
     for c in chunks:
         vec = c.get("embedding", [])
@@ -129,6 +131,22 @@ async def compare_answers(payload: CompareRequest):
     """
     result = await run_comparison(payload.question, top_k=payload.top_k)
     return CompareResponse(**result)
+
+
+# ===================================================
+# Exercise 4: Microservice Orchestration Endpoint
+# ===================================================
+
+@app.post("/api/orchestrate", response_model=OrchestrateResponse)
+async def orchestrate_request(payload: OrchestrateRequest):
+    """
+    Exercise 4 Orchestration Pipeline:
+    Coordinates workflow across independent microservices:
+    Application Service (:8000) -> Retrieval Service (:8001) -> LLM Service (:8002).
+    Returns grounded answer, retrieved chunks, and an exact execution trace with real timings.
+    """
+    result = await orchestrate_workflow(payload.question, top_k=payload.top_k)
+    return result
 
 
 # Mount static directory for frontend UI
