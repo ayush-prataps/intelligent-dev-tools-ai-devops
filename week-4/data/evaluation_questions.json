@@ -1,0 +1,208 @@
+[
+  {
+    "id": "Q01",
+    "category": "direct_factual",
+    "question": "What is the minimum attendance requirement for a student to be eligible for end-semester examinations?",
+    "expected_answer": "Students must maintain at least 75% attendance in each enrolled theory and laboratory course.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Minimum Attendance Requirement"
+  },
+  {
+    "id": "Q02",
+    "category": "direct_factual",
+    "question": "How many books can a registered student borrow from the Central University Library at one time?",
+    "expected_answer": "A registered student may borrow up to four books simultaneously.",
+    "expected_source": "campus_facilities.md",
+    "expected_section": "Central Library and Digital Resource Timings"
+  },
+  {
+    "id": "Q03",
+    "category": "direct_factual",
+    "question": "What is the maximum number of casual leave days allowed per academic semester?",
+    "expected_answer": "Students may receive up to six days of approved casual leave per academic semester.",
+    "expected_source": "leave_policy.md",
+    "expected_section": "Casual Leave and Absence Notification"
+  },
+  {
+    "id": "Q04",
+    "category": "direct_factual",
+    "question": "What is the minimum CGPA required to remain in good academic standing?",
+    "expected_answer": "Students must maintain a minimum CGPA of 5.0 at the end of each academic year.",
+    "expected_source": "academic_policies.md",
+    "expected_section": "Academic Probation and CGPA Retention"
+  },
+  {
+    "id": "Q05",
+    "category": "direct_factual",
+    "question": "How early must students arrive at the examination hall before the scheduled examination time?",
+    "expected_answer": "Students must arrive at least 15 minutes before the scheduled commencement.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Examination Hall Entry and Admit Card"
+  },
+
+  {
+    "id": "Q06",
+    "category": "multi_condition_reasoning",
+    "question": "A student has 70% attendance and genuine medical grounds. Can the student automatically appear for the examination?",
+    "expected_answer": "No. Attendance between 65% and 74.9% requires an application for condonation on genuine medical or compassionate grounds. Condonation is discretionary and granted only by the Academic Review Board.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Condonation of Attendance Shortage"
+  },
+  {
+    "id": "Q07",
+    "category": "multi_condition_reasoning",
+    "question": "A student's CGPA falls to 4.8 at the end of the academic year. What happens to the student and how many credits can they register for during probation?",
+    "expected_answer": "The student is placed on Academic Probation for one semester, their maximum registered credits are capped at 18, and they must attend mandatory remedial advisory sessions.",
+    "expected_source": "academic_policies.md",
+    "expected_section": "Academic Probation and CGPA Retention"
+  },
+  {
+    "id": "Q08",
+    "category": "multi_condition_reasoning",
+    "question": "A student has 64% attendance in a course. What is the examination consequence?",
+    "expected_answer": "The student is debarred from the end-semester examination for that course, receives an F-Attendance (FA) grade, and must re-register for the course when it is offered.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Debarment Due to Attendance Shortage"
+  },
+  {
+    "id": "Q09",
+    "category": "multi_condition_reasoning",
+    "question": "Can a student register for an advanced course if they have not passed its prerequisite but have a recommendation from the course instructor?",
+    "expected_answer": "No. A conditional prerequisite waiver also requires approval by the Departmental Academic Committee before course registration.",
+    "expected_source": "academic_policies.md",
+    "expected_section": "Course Prerequisite Policy"
+  },
+  {
+    "id": "Q10",
+    "category": "multi_condition_reasoning",
+    "question": "A student receives an F grade in a theoretical course and wants another attempt. What option is available?",
+    "expected_answer": "The student may appear for a Supplementary Examination conducted before the start of the following academic year.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Supplementary Examinations and Revaluation"
+  },
+
+  {
+    "id": "Q11",
+    "category": "policy_comparison",
+    "question": "What is the difference between attendance below 65% and attendance between 65% and 74.9%?",
+    "expected_answer": "Below 65% results in debarment, an FA grade, and course re-registration. Attendance from 65% to 74.9% allows the student to apply for condonation on genuine medical or compassionate grounds, subject to Academic Review Board approval.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Condonation of Attendance Shortage; Debarment Due to Attendance Shortage"
+  },
+  {
+    "id": "Q12",
+    "category": "policy_comparison",
+    "question": "How do casual leave and medical leave differ in their maximum duration?",
+    "expected_answer": "Casual leave is limited to six days per academic semester, while recognized medical leave can be up to 15 calendar days per semester for severe illness or hospitalization.",
+    "expected_source": "leave_policy.md",
+    "expected_section": "Casual Leave and Absence Notification; Medical Leave and Health Center Certification"
+  },
+  {
+    "id": "Q13",
+    "category": "policy_comparison",
+    "question": "What are the main differences between examination entry requirements and prohibited-item rules?",
+    "expected_answer": "Entry requirements specify arriving at least 15 minutes early and carrying a valid physical University ID and signed Examination Admit Card. Prohibited-item rules ban mobile phones, smartwatches, programmable calculators, Bluetooth earphones, storage media, and unauthorized written materials.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Examination Hall Entry and Admit Card; Prohibited Items and Electronics"
+  },
+  {
+    "id": "Q14",
+    "category": "policy_comparison",
+    "question": "What distinguishes Academic Probation from Semester Withdrawal?",
+    "expected_answer": "Academic Probation occurs when CGPA falls below 5.0 and lasts one semester with an 18-credit cap and mandatory remedial advisory sessions. Semester Withdrawal is a formal withdrawal for prolonged medical incapacitation requiring more than four continuous weeks of absence, with courses marked W.",
+    "expected_source": "academic_policies.md; leave_policy.md",
+    "expected_section": "Academic Probation and CGPA Retention; Long-Term Semester Withdrawal"
+  },
+
+  {
+    "id": "Q15",
+    "category": "procedure",
+    "question": "What must a student do if they discover an attendance discrepancy in the University Academic ERP?",
+    "expected_answer": "The student must report the discrepancy in writing to the respective course coordinator within five business days of attendance posting.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Attendance Monitoring and Discrepancies"
+  },
+  {
+    "id": "Q16",
+    "category": "procedure",
+    "question": "What documents and steps are required when returning from severe illness or hospitalization?",
+    "expected_answer": "The student or guardian must notify the Department Head within 48 hours of illness onset. Upon return, the student must report to the University Health Center for fitness verification with original hospital discharge summaries and medical prescriptions.",
+    "expected_source": "leave_policy.md",
+    "expected_section": "Medical Leave and Health Center Certification"
+  },
+  {
+    "id": "Q17",
+    "category": "procedure",
+    "question": "What is required before a student can operate heavy machinery in the Advanced Innovation Maker Space?",
+    "expected_answer": "The student must complete the mandatory Workshop Safety Orientation before operating heavy machinery.",
+    "expected_source": "campus_facilities.md",
+    "expected_section": "Maker Space and Hardware Prototyping"
+  },
+  {
+    "id": "Q18",
+    "category": "procedure",
+    "question": "How can a student request answer script revaluation after receiving examination results?",
+    "expected_answer": "The student must submit a formal request for answer script revaluation or transparency photocopy through the Controller of Examinations portal within ten working days of result declaration.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Supplementary Examinations and Revaluation"
+  },
+
+  {
+    "id": "Q19",
+    "category": "edge_case",
+    "question": "A student has exactly 75% attendance. Are they eligible for end-semester examinations?",
+    "expected_answer": "Yes. The minimum attendance requirement is 75%.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Minimum Attendance Requirement"
+  },
+  {
+    "id": "Q20",
+    "category": "edge_case",
+    "question": "Are digital ID cards on mobile phones accepted for examination entry?",
+    "expected_answer": "No. Students must present a valid physical University Identity Card and official Examination Admit Card.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Examination Hall Entry and Admit Card"
+  },
+  {
+    "id": "Q21",
+    "category": "edge_case",
+    "question": "Is a mobile phone allowed in the examination venue if it is switched off?",
+    "expected_answer": "No. Possession of an electronic communication device, whether powered on or off, is categorized as a Category-1 examination violation.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Prohibited Items and Electronics"
+  },
+
+  {
+    "id": "Q22",
+    "category": "insufficient_context",
+    "question": "What is the university's policy for hostel room allocation?",
+    "expected_answer": "The provided knowledge base does not contain information about hostel room allocation.",
+    "expected_source": null,
+    "expected_section": null
+  },
+  {
+    "id": "Q23",
+    "category": "insufficient_context",
+    "question": "What is the university's tuition fee for the current semester?",
+    "expected_answer": "The provided knowledge base does not specify current semester tuition fees.",
+    "expected_source": null,
+    "expected_section": null
+  },
+
+  {
+    "id": "Q24",
+    "category": "multi_document",
+    "question": "A student wants to represent the university at a technical hackathon and is also concerned about maintaining attendance. What attendance provision applies?",
+    "expected_answer": "Students representing the university in technical hackathons may receive On-Duty (OD) attendance credit. The faculty coordinator must endorse and submit the OD approval form to the Academic Registrar prior to the event.",
+    "expected_source": "leave_policy.md; attendance_policy.md",
+    "expected_section": "Duty Leave for Competitions and Conferences; Minimum Attendance Requirement"
+  },
+  {
+    "id": "Q25",
+    "category": "multi_document",
+    "question": "A student with 70% attendance has genuine medical grounds and wants to know whether they can use medical leave to address the shortage. What do the policies indicate?",
+    "expected_answer": "The attendance policy allows students with 65% to 74.9% attendance to apply for condonation on genuine medical or compassionate grounds, subject to Academic Review Board approval. Separately, severe illness or hospitalization may qualify for medical leave of up to 15 calendar days per semester, with the required notification and Health Center verification procedures.",
+    "expected_source": "attendance_policy.md; leave_policy.md",
+    "expected_section": "Condonation of Attendance Shortage; Medical Leave and Health Center Certification"
+  }
+]

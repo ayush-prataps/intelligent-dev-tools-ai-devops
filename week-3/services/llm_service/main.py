@@ -24,6 +24,9 @@ class GenerateRequest(BaseModel):
 class GenerateResponse(BaseModel):
     answer: str
     model: str
+    prompt_eval_count: Optional[int] = None
+    eval_count: Optional[int] = None
+    total_duration: Optional[int] = None
 
 
 @app.get("/health")
@@ -79,4 +82,11 @@ async def generate_completion(payload: GenerateRequest):
 
     data = response.json()
     answer = data.get("response", "")
-    return GenerateResponse(answer=answer, model=model_name)
+
+    return GenerateResponse(
+        answer=answer,
+        model=model_name,
+        prompt_eval_count=data.get("prompt_eval_count"),
+        eval_count=data.get("eval_count"),
+        total_duration=data.get("total_duration")
+    )

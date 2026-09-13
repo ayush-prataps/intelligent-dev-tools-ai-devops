@@ -1,0 +1,7 @@
+{
+    "models": [
+        "codellama:7b-instruct",
+        "phi3:mini",
+        "qwen2.5:3b"
+    ]
+}
