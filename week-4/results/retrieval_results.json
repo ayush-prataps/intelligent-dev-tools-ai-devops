@@ -1,0 +1,722 @@
+[
+  {
+    "question_id": "Q01",
+    "category": "direct_factual",
+    "question": "What is the minimum attendance requirement for a student to be eligible for end-semester examinations?",
+    "expected_answer": "Students must maintain at least 75% attendance in each enrolled theory and laboratory course.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Minimum Attendance Requirement",
+    "retrieval_latency_ms": 1229.8,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.9108,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.7739,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_03",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Debarment Due to Attendance Shortage",
+        "similarity_score": 0.7731,
+        "text": "[University Attendance Policy > Debarment Due to Attendance Shortage]\nStudents with aggregate course attendance below 65% under any circumstances are considered debarred from appearing in the end-semester examination for that specific course. Debarred students receive an 'F-Attendance' (FA) grade and are required to re-register for the course in a subsequent semester or summer term when the course is offered."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q02",
+    "category": "direct_factual",
+    "question": "How many books can a registered student borrow from the Central University Library at one time?",
+    "expected_answer": "A registered student may borrow up to four books simultaneously.",
+    "expected_source": "campus_facilities.md",
+    "expected_section": "Central Library and Digital Resource Timings",
+    "retrieval_latency_ms": 43.14,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "campus_facilities_chunk_01",
+        "doc_id": "campus_facilities",
+        "doc_title": "University Campus Facilities and Resource Access",
+        "section": "Central Library and Digital Resource Timings",
+        "similarity_score": 0.7596,
+        "text": "[University Campus Facilities and Resource Access > Central Library and Digital Resource Timings]\nThe Central University Library remains open Monday through Saturday from 08:00 AM to 10:00 PM, and on Sundays and recognized holidays from 10:00 AM to 06:00 PM. During final examination weeks, reading halls operate on a 24-hour schedule. Registered students may borrow up to four books simultaneously for a borrowing period of 14 calendar days using their barcode-enabled Student ID Card."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.5658,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      },
+      {
+        "chunk_id": "examination_rules_chunk_01",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Examination Hall Entry and Admit Card",
+        "similarity_score": 0.547,
+        "text": "[University Examination Rules and Regulations > Examination Hall Entry and Admit Card]\nStudents must arrive at the examination hall at least 15 minutes before the scheduled commencement of the examination. No candidate will be admitted after 30 minutes from the start time. Every student must present a valid physical University Identity Card and official Examination Admit Card signed by the Controller of Examinations. Digital ID cards on mobile devices are not permitted."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q03",
+    "category": "direct_factual",
+    "question": "What is the maximum number of casual leave days allowed per academic semester?",
+    "expected_answer": "Students may receive up to six days of approved casual leave per academic semester.",
+    "expected_source": "leave_policy.md",
+    "expected_section": "Casual Leave and Absence Notification",
+    "retrieval_latency_ms": 34.66,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "leave_policy_chunk_01",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Casual Leave and Absence Notification",
+        "similarity_score": 0.8336,
+        "text": "[Student Leave Regulations and Protocols > Casual Leave and Absence Notification]\nStudents are eligible for up to six days of approved casual leave per academic semester for personal, domestic, or emergent circumstances. A leave application must be submitted via the student portal at least 24 hours prior to the intended leave date, accompanied by parental or guardian authorization."
+      },
+      {
+        "chunk_id": "leave_policy_chunk_02",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Medical Leave and Health Center Certification",
+        "similarity_score": 0.7496,
+        "text": "[Student Leave Regulations and Protocols > Medical Leave and Health Center Certification]\nIn the event of severe illness or hospitalization, medical leave up to a maximum of 15 calendar days per semester may be recognized. The student or guardian must notify the Department Head within 48 hours of illness onset. Upon return, the student must report to the University Health Center for fitness verification with original hospital discharge summaries and medical prescriptions."
+      },
+      {
+        "chunk_id": "leave_policy_chunk_04",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Long-Term Semester Withdrawal",
+        "similarity_score": 0.7481,
+        "text": "[Student Leave Regulations and Protocols > Long-Term Semester Withdrawal]\nA student who experiences prolonged medical incapacitation requiring absence of more than four continuous weeks may petition the Academic Council for a formal Semester Withdrawal without academic penalty. Courses for that semester will be marked as 'Withdrawn' (W) and tuition fee adjustment is governed by university refund bylaws."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q04",
+    "category": "direct_factual",
+    "question": "What is the minimum CGPA required to remain in good academic standing?",
+    "expected_answer": "Students must maintain a minimum CGPA of 5.0 at the end of each academic year.",
+    "expected_source": "academic_policies.md",
+    "expected_section": "Academic Probation and CGPA Retention",
+    "retrieval_latency_ms": 32.67,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "academic_policies_chunk_03",
+        "doc_id": "academic_policies",
+        "doc_title": "University Academic Policies and Degree Requirements",
+        "section": "Academic Probation and CGPA Retention",
+        "similarity_score": 0.8339,
+        "text": "[University Academic Policies and Degree Requirements > Academic Probation and CGPA Retention]\nA student must maintain a minimum CGPA of 5.0 at the end of each academic year to remain in good academic standing. If a student's CGPA falls below 5.0, they will be placed on Academic Probation for one semester. Students on probation have their maximum registered credits capped at 18 credits and must attend mandatory remedial advisory sessions."
+      },
+      {
+        "chunk_id": "examination_rules_chunk_03",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Grading System and Passing Standards",
+        "similarity_score": 0.7481,
+        "text": "[University Examination Rules and Regulations > Grading System and Passing Standards]\nThe university operates on a 10-point Cumulative Grade Point Average (CGPA) system. Course grades range from 'O' (Outstanding - 10 points) down to 'P' (Pass - 4 points) and 'F' (Fail - 0 points). To successfully earn course credits, a student must secure at least 40% marks in the end-semester examination and an aggregate of 45% when combined with continuous internal evaluations."
+      },
+      {
+        "chunk_id": "academic_policies_chunk_04",
+        "doc_id": "academic_policies",
+        "doc_title": "University Academic Policies and Degree Requirements",
+        "section": "Honors and Minor Degrees",
+        "similarity_score": 0.7323,
+        "text": "[University Academic Policies and Degree Requirements > Honors and Minor Degrees]\nStudents with a consistent CGPA of 8.0 or higher, with no historical course backlogs, may opt for an Honors degree in their primary discipline or a Minor degree in a secondary engineering or computing specialization by completing an additional 18–20 specialized credits between semesters 4 and 8."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q05",
+    "category": "multi_condition_reasoning",
+    "question": "A student has 70% attendance and genuine medical grounds. Can the student automatically appear for the examination?",
+    "expected_answer": "No. Attendance between 65% and 74.9% requires an application for condonation on genuine medical or compassionate grounds. Condonation is discretionary and granted only by the Academic Review Board.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Condonation of Attendance Shortage",
+    "retrieval_latency_ms": 35.07,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.7568,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.7324,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      },
+      {
+        "chunk_id": "examination_rules_chunk_01",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Examination Hall Entry and Admit Card",
+        "similarity_score": 0.7284,
+        "text": "[University Examination Rules and Regulations > Examination Hall Entry and Admit Card]\nStudents must arrive at the examination hall at least 15 minutes before the scheduled commencement of the examination. No candidate will be admitted after 30 minutes from the start time. Every student must present a valid physical University Identity Card and official Examination Admit Card signed by the Controller of Examinations. Digital ID cards on mobile devices are not permitted."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q06",
+    "category": "multi_condition_reasoning",
+    "question": "A student's CGPA falls to 4.8 at the end of the academic year. What happens to the student and how many credits can they register for during probation?",
+    "expected_answer": "The student is placed on Academic Probation for one semester, their maximum registered credits are capped at 18, and they must attend mandatory remedial advisory sessions.",
+    "expected_source": "academic_policies.md",
+    "expected_section": "Academic Probation and CGPA Retention",
+    "retrieval_latency_ms": 36.62,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "academic_policies_chunk_03",
+        "doc_id": "academic_policies",
+        "doc_title": "University Academic Policies and Degree Requirements",
+        "section": "Academic Probation and CGPA Retention",
+        "similarity_score": 0.8359,
+        "text": "[University Academic Policies and Degree Requirements > Academic Probation and CGPA Retention]\nA student must maintain a minimum CGPA of 5.0 at the end of each academic year to remain in good academic standing. If a student's CGPA falls below 5.0, they will be placed on Academic Probation for one semester. Students on probation have their maximum registered credits capped at 18 credits and must attend mandatory remedial advisory sessions."
+      },
+      {
+        "chunk_id": "examination_rules_chunk_03",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Grading System and Passing Standards",
+        "similarity_score": 0.7033,
+        "text": "[University Examination Rules and Regulations > Grading System and Passing Standards]\nThe university operates on a 10-point Cumulative Grade Point Average (CGPA) system. Course grades range from 'O' (Outstanding - 10 points) down to 'P' (Pass - 4 points) and 'F' (Fail - 0 points). To successfully earn course credits, a student must secure at least 40% marks in the end-semester examination and an aggregate of 45% when combined with continuous internal evaluations."
+      },
+      {
+        "chunk_id": "academic_policies_chunk_04",
+        "doc_id": "academic_policies",
+        "doc_title": "University Academic Policies and Degree Requirements",
+        "section": "Honors and Minor Degrees",
+        "similarity_score": 0.6833,
+        "text": "[University Academic Policies and Degree Requirements > Honors and Minor Degrees]\nStudents with a consistent CGPA of 8.0 or higher, with no historical course backlogs, may opt for an Honors degree in their primary discipline or a Minor degree in a secondary engineering or computing specialization by completing an additional 18–20 specialized credits between semesters 4 and 8."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q07",
+    "category": "multi_condition_reasoning",
+    "question": "A student has 64% attendance in a course. What is the examination consequence?",
+    "expected_answer": "The student is debarred from the end-semester examination for that course, receives an F-Attendance (FA) grade, and must re-register for the course when it is offered.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Debarment Due to Attendance Shortage",
+    "retrieval_latency_ms": 31.35,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_03",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Debarment Due to Attendance Shortage",
+        "similarity_score": 0.7513,
+        "text": "[University Attendance Policy > Debarment Due to Attendance Shortage]\nStudents with aggregate course attendance below 65% under any circumstances are considered debarred from appearing in the end-semester examination for that specific course. Debarred students receive an 'F-Attendance' (FA) grade and are required to re-register for the course in a subsequent semester or summer term when the course is offered."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.7483,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.7054,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q08",
+    "category": "multi_condition_reasoning",
+    "question": "Can a student register for an advanced course if they have not passed its prerequisite but have a recommendation from the course instructor?",
+    "expected_answer": "No. A conditional prerequisite waiver also requires approval by the Departmental Academic Committee before course registration.",
+    "expected_source": "academic_policies.md",
+    "expected_section": "Course Prerequisite Policy",
+    "retrieval_latency_ms": 47.65,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "academic_policies_chunk_02",
+        "doc_id": "academic_policies",
+        "doc_title": "University Academic Policies and Degree Requirements",
+        "section": "Course Prerequisite Policy",
+        "similarity_score": 0.835,
+        "text": "[University Academic Policies and Degree Requirements > Course Prerequisite Policy]\nStudents cannot register for an advanced course without successfully clearing its listed prerequisite subjects with a passing grade. Any conditional prerequisite waiver requires written recommendation from the course instructor and approval by the Departmental Academic Committee prior to course registration."
+      },
+      {
+        "chunk_id": "academic_policies_chunk_01",
+        "doc_id": "academic_policies",
+        "doc_title": "University Academic Policies and Degree Requirements",
+        "section": "Degree Credit Structure and Course Registration",
+        "similarity_score": 0.66,
+        "text": "[University Academic Policies and Degree Requirements > Degree Credit Structure and Course Registration]\nUndergraduate engineering degree programs require the successful completion of a minimum of 160 academic credits distributed across Basic Sciences, Engineering Core, Professional Electives, Open Electives, and Capstone Projects. Course registration occurs during the first three days of each semester through the Student Information System. Late registration is permitted up to five days with an approved penalty fee."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_03",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Debarment Due to Attendance Shortage",
+        "similarity_score": 0.6358,
+        "text": "[University Attendance Policy > Debarment Due to Attendance Shortage]\nStudents with aggregate course attendance below 65% under any circumstances are considered debarred from appearing in the end-semester examination for that specific course. Debarred students receive an 'F-Attendance' (FA) grade and are required to re-register for the course in a subsequent semester or summer term when the course is offered."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q09",
+    "category": "policy_comparison",
+    "question": "What is the difference between attendance below 65% and attendance between 65% and 74.9%?",
+    "expected_answer": "Below 65% results in debarment, an FA grade, and course re-registration. Attendance from 65% to 74.9% allows the student to apply for condonation on genuine medical or compassionate grounds, subject to Academic Review Board approval.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Condonation of Attendance Shortage; Debarment Due to Attendance Shortage",
+    "retrieval_latency_ms": 39.17,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_03",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Debarment Due to Attendance Shortage",
+        "similarity_score": 0.7037,
+        "text": "[University Attendance Policy > Debarment Due to Attendance Shortage]\nStudents with aggregate course attendance below 65% under any circumstances are considered debarred from appearing in the end-semester examination for that specific course. Debarred students receive an 'F-Attendance' (FA) grade and are required to re-register for the course in a subsequent semester or summer term when the course is offered."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.6918,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.6617,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q10",
+    "category": "policy_comparison",
+    "question": "How do casual leave and medical leave differ in their maximum duration?",
+    "expected_answer": "Casual leave is limited to six days per academic semester, while recognized medical leave can be up to 15 calendar days per semester for severe illness or hospitalization.",
+    "expected_source": "leave_policy.md",
+    "expected_section": "Casual Leave and Absence Notification; Medical Leave and Health Center Certification",
+    "retrieval_latency_ms": 693.48,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "leave_policy_chunk_02",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Medical Leave and Health Center Certification",
+        "similarity_score": 0.7566,
+        "text": "[Student Leave Regulations and Protocols > Medical Leave and Health Center Certification]\nIn the event of severe illness or hospitalization, medical leave up to a maximum of 15 calendar days per semester may be recognized. The student or guardian must notify the Department Head within 48 hours of illness onset. Upon return, the student must report to the University Health Center for fitness verification with original hospital discharge summaries and medical prescriptions."
+      },
+      {
+        "chunk_id": "leave_policy_chunk_01",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Casual Leave and Absence Notification",
+        "similarity_score": 0.731,
+        "text": "[Student Leave Regulations and Protocols > Casual Leave and Absence Notification]\nStudents are eligible for up to six days of approved casual leave per academic semester for personal, domestic, or emergent circumstances. A leave application must be submitted via the student portal at least 24 hours prior to the intended leave date, accompanied by parental or guardian authorization."
+      },
+      {
+        "chunk_id": "leave_policy_chunk_04",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Long-Term Semester Withdrawal",
+        "similarity_score": 0.6682,
+        "text": "[Student Leave Regulations and Protocols > Long-Term Semester Withdrawal]\nA student who experiences prolonged medical incapacitation requiring absence of more than four continuous weeks may petition the Academic Council for a formal Semester Withdrawal without academic penalty. Courses for that semester will be marked as 'Withdrawn' (W) and tuition fee adjustment is governed by university refund bylaws."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q11",
+    "category": "policy_comparison",
+    "question": "What distinguishes Academic Probation from Semester Withdrawal?",
+    "expected_answer": "Academic Probation occurs when CGPA falls below 5.0 and lasts one semester with an 18-credit cap and mandatory remedial advisory sessions. Semester Withdrawal is a formal withdrawal for prolonged medical incapacitation requiring more than four continuous weeks of absence, with courses marked W.",
+    "expected_source": "academic_policies.md; leave_policy.md",
+    "expected_section": "Academic Probation and CGPA Retention; Long-Term Semester Withdrawal",
+    "retrieval_latency_ms": 30.32,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "leave_policy_chunk_04",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Long-Term Semester Withdrawal",
+        "similarity_score": 0.7464,
+        "text": "[Student Leave Regulations and Protocols > Long-Term Semester Withdrawal]\nA student who experiences prolonged medical incapacitation requiring absence of more than four continuous weeks may petition the Academic Council for a formal Semester Withdrawal without academic penalty. Courses for that semester will be marked as 'Withdrawn' (W) and tuition fee adjustment is governed by university refund bylaws."
+      },
+      {
+        "chunk_id": "academic_policies_chunk_03",
+        "doc_id": "academic_policies",
+        "doc_title": "University Academic Policies and Degree Requirements",
+        "section": "Academic Probation and CGPA Retention",
+        "similarity_score": 0.7203,
+        "text": "[University Academic Policies and Degree Requirements > Academic Probation and CGPA Retention]\nA student must maintain a minimum CGPA of 5.0 at the end of each academic year to remain in good academic standing. If a student's CGPA falls below 5.0, they will be placed on Academic Probation for one semester. Students on probation have their maximum registered credits capped at 18 credits and must attend mandatory remedial advisory sessions."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_03",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Debarment Due to Attendance Shortage",
+        "similarity_score": 0.6354,
+        "text": "[University Attendance Policy > Debarment Due to Attendance Shortage]\nStudents with aggregate course attendance below 65% under any circumstances are considered debarred from appearing in the end-semester examination for that specific course. Debarred students receive an 'F-Attendance' (FA) grade and are required to re-register for the course in a subsequent semester or summer term when the course is offered."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q12",
+    "category": "procedure",
+    "question": "What must a student do if they discover an attendance discrepancy in the University Academic ERP?",
+    "expected_answer": "The student must report the discrepancy in writing to the respective course coordinator within five business days of attendance posting.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Attendance Monitoring and Discrepancies",
+    "retrieval_latency_ms": 33.26,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_04",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Attendance Monitoring and Discrepancies",
+        "similarity_score": 0.8658,
+        "text": "[University Attendance Policy > Attendance Monitoring and Discrepancies]\nCourse instructors update daily attendance in the University Academic ERP portal within 48 hours of conducting each class. Students are responsible for reviewing their attendance record weekly. Any discrepancy must be reported in writing to the respective course coordinator within five business days of attendance posting."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_03",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Debarment Due to Attendance Shortage",
+        "similarity_score": 0.751,
+        "text": "[University Attendance Policy > Debarment Due to Attendance Shortage]\nStudents with aggregate course attendance below 65% under any circumstances are considered debarred from appearing in the end-semester examination for that specific course. Debarred students receive an 'F-Attendance' (FA) grade and are required to re-register for the course in a subsequent semester or summer term when the course is offered."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.7262,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q13",
+    "category": "procedure",
+    "question": "What documents and steps are required when returning from severe illness or hospitalization?",
+    "expected_answer": "The student or guardian must notify the Department Head within 48 hours of illness onset. Upon return, the student must report to the University Health Center for fitness verification with original hospital discharge summaries and medical prescriptions.",
+    "expected_source": "leave_policy.md",
+    "expected_section": "Medical Leave and Health Center Certification",
+    "retrieval_latency_ms": 28.54,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "leave_policy_chunk_02",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Medical Leave and Health Center Certification",
+        "similarity_score": 0.6964,
+        "text": "[Student Leave Regulations and Protocols > Medical Leave and Health Center Certification]\nIn the event of severe illness or hospitalization, medical leave up to a maximum of 15 calendar days per semester may be recognized. The student or guardian must notify the Department Head within 48 hours of illness onset. Upon return, the student must report to the University Health Center for fitness verification with original hospital discharge summaries and medical prescriptions."
+      },
+      {
+        "chunk_id": "leave_policy_chunk_04",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Long-Term Semester Withdrawal",
+        "similarity_score": 0.6339,
+        "text": "[Student Leave Regulations and Protocols > Long-Term Semester Withdrawal]\nA student who experiences prolonged medical incapacitation requiring absence of more than four continuous weeks may petition the Academic Council for a formal Semester Withdrawal without academic penalty. Courses for that semester will be marked as 'Withdrawn' (W) and tuition fee adjustment is governed by university refund bylaws."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.6052,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q14",
+    "category": "procedure",
+    "question": "How can a student request answer script revaluation after receiving examination results?",
+    "expected_answer": "The student must submit a formal request for answer script revaluation or transparency photocopy through the Controller of Examinations portal within ten working days of result declaration.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Supplementary Examinations and Revaluation",
+    "retrieval_latency_ms": 68.98,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "examination_rules_chunk_04",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Supplementary Examinations and Revaluation",
+        "similarity_score": 0.7508,
+        "text": "[University Examination Rules and Regulations > Supplementary Examinations and Revaluation]\nStudents who receive an 'F' grade in a theoretical course may appear for a Supplementary Examination conducted before the start of the following academic year. Students dissatisfied with their evaluation may submit a formal request for answer script revaluation or transparency photocopy within ten working days of result declaration through the Controller of Examinations portal."
+      },
+      {
+        "chunk_id": "examination_rules_chunk_03",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Grading System and Passing Standards",
+        "similarity_score": 0.5629,
+        "text": "[University Examination Rules and Regulations > Grading System and Passing Standards]\nThe university operates on a 10-point Cumulative Grade Point Average (CGPA) system. Course grades range from 'O' (Outstanding - 10 points) down to 'P' (Pass - 4 points) and 'F' (Fail - 0 points). To successfully earn course credits, a student must secure at least 40% marks in the end-semester examination and an aggregate of 45% when combined with continuous internal evaluations."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.551,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q15",
+    "category": "edge_case",
+    "question": "A student has exactly 75% attendance. Are they eligible for end-semester examinations?",
+    "expected_answer": "Yes. The minimum attendance requirement is 75%.",
+    "expected_source": "attendance_policy.md",
+    "expected_section": "Minimum Attendance Requirement",
+    "retrieval_latency_ms": 25.78,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.8171,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.7474,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_03",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Debarment Due to Attendance Shortage",
+        "similarity_score": 0.738,
+        "text": "[University Attendance Policy > Debarment Due to Attendance Shortage]\nStudents with aggregate course attendance below 65% under any circumstances are considered debarred from appearing in the end-semester examination for that specific course. Debarred students receive an 'F-Attendance' (FA) grade and are required to re-register for the course in a subsequent semester or summer term when the course is offered."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q16",
+    "category": "edge_case",
+    "question": "Are digital ID cards on mobile phones accepted for examination entry?",
+    "expected_answer": "No. Students must present a valid physical University Identity Card and official Examination Admit Card.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Examination Hall Entry and Admit Card",
+    "retrieval_latency_ms": 26.51,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "examination_rules_chunk_01",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Examination Hall Entry and Admit Card",
+        "similarity_score": 0.7424,
+        "text": "[University Examination Rules and Regulations > Examination Hall Entry and Admit Card]\nStudents must arrive at the examination hall at least 15 minutes before the scheduled commencement of the examination. No candidate will be admitted after 30 minutes from the start time. Every student must present a valid physical University Identity Card and official Examination Admit Card signed by the Controller of Examinations. Digital ID cards on mobile devices are not permitted."
+      },
+      {
+        "chunk_id": "examination_rules_chunk_02",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Prohibited Items and Electronics",
+        "similarity_score": 0.681,
+        "text": "[University Examination Rules and Regulations > Prohibited Items and Electronics]\nMobile phones, smartwatches, programmable calculators, Bluetooth earphones, storage media, and unauthorized written materials are strictly prohibited inside the examination venue. Possession of any electronic communication device, whether powered on or off, is categorized as a Category-1 examination violation and results in immediate confiscation and disciplinary investigation."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.5597,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q17",
+    "category": "edge_case",
+    "question": "Is a mobile phone allowed in the examination venue if it is switched off?",
+    "expected_answer": "No. Possession of an electronic communication device, whether powered on or off, is categorized as a Category-1 examination violation.",
+    "expected_source": "examination_rules.md",
+    "expected_section": "Prohibited Items and Electronics",
+    "retrieval_latency_ms": 25.89,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "examination_rules_chunk_02",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Prohibited Items and Electronics",
+        "similarity_score": 0.7547,
+        "text": "[University Examination Rules and Regulations > Prohibited Items and Electronics]\nMobile phones, smartwatches, programmable calculators, Bluetooth earphones, storage media, and unauthorized written materials are strictly prohibited inside the examination venue. Possession of any electronic communication device, whether powered on or off, is categorized as a Category-1 examination violation and results in immediate confiscation and disciplinary investigation."
+      },
+      {
+        "chunk_id": "examination_rules_chunk_01",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Examination Hall Entry and Admit Card",
+        "similarity_score": 0.6225,
+        "text": "[University Examination Rules and Regulations > Examination Hall Entry and Admit Card]\nStudents must arrive at the examination hall at least 15 minutes before the scheduled commencement of the examination. No candidate will be admitted after 30 minutes from the start time. Every student must present a valid physical University Identity Card and official Examination Admit Card signed by the Controller of Examinations. Digital ID cards on mobile devices are not permitted."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.5871,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q18",
+    "category": "insufficient_context",
+    "question": "What is the university's policy for hostel room allocation?",
+    "expected_answer": "The provided knowledge base does not contain information about hostel room allocation.",
+    "expected_source": null,
+    "expected_section": null,
+    "retrieval_latency_ms": 23.81,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.6307,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.6261,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      },
+      {
+        "chunk_id": "examination_rules_chunk_01",
+        "doc_id": "examination_rules",
+        "doc_title": "University Examination Rules and Regulations",
+        "section": "Examination Hall Entry and Admit Card",
+        "similarity_score": 0.6238,
+        "text": "[University Examination Rules and Regulations > Examination Hall Entry and Admit Card]\nStudents must arrive at the examination hall at least 15 minutes before the scheduled commencement of the examination. No candidate will be admitted after 30 minutes from the start time. Every student must present a valid physical University Identity Card and official Examination Admit Card signed by the Controller of Examinations. Digital ID cards on mobile devices are not permitted."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q19",
+    "category": "multi_document",
+    "question": "A student wants to represent the university at a technical hackathon and is also concerned about maintaining attendance. What attendance provision applies?",
+    "expected_answer": "Students representing the university in technical hackathons may receive On-Duty (OD) attendance credit. The faculty coordinator must endorse and submit the OD approval form to the Academic Registrar prior to the event.",
+    "expected_source": "leave_policy.md; attendance_policy.md",
+    "expected_section": "Duty Leave for Competitions and Conferences; Minimum Attendance Requirement",
+    "retrieval_latency_ms": 30.56,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_01",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Minimum Attendance Requirement",
+        "similarity_score": 0.7714,
+        "text": "[University Attendance Policy > Minimum Attendance Requirement]\nAll registered undergraduate and postgraduate students must maintain a minimum attendance of 75% in each enrolled theory and laboratory course during a semester to be eligible for end-semester examinations. Attendance is calculated from the official semester commencement date until the last instructional day announced in the academic calendar."
+      },
+      {
+        "chunk_id": "leave_policy_chunk_03",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Duty Leave for Competitions and Conferences",
+        "similarity_score": 0.7496,
+        "text": "[Student Leave Regulations and Protocols > Duty Leave for Competitions and Conferences]\nStudents representing the university in state or national sports events, technical hackathons, academic conferences, or cultural symposiums are granted On-Duty (OD) attendance credit. The faculty coordinator of the respective club or sports director must endorse and submit the OD approval form to the Academic Registrar prior to the event."
+      },
+      {
+        "chunk_id": "attendance_policy_chunk_04",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Attendance Monitoring and Discrepancies",
+        "similarity_score": 0.7359,
+        "text": "[University Attendance Policy > Attendance Monitoring and Discrepancies]\nCourse instructors update daily attendance in the University Academic ERP portal within 48 hours of conducting each class. Students are responsible for reviewing their attendance record weekly. Any discrepancy must be reported in writing to the respective course coordinator within five business days of attendance posting."
+      }
+    ],
+    "error": null
+  },
+  {
+    "question_id": "Q20",
+    "category": "multi_document",
+    "question": "A student with 70% attendance has genuine medical grounds and wants to know whether they can use medical leave to address the shortage. What do the policies indicate?",
+    "expected_answer": "The attendance policy allows students with 65% to 74.9% attendance to apply for condonation on genuine medical or compassionate grounds, subject to Academic Review Board approval. Separately, severe illness or hospitalization may qualify for medical leave of up to 15 calendar days per semester, with the required notification and Health Center verification procedures.",
+    "expected_source": "attendance_policy.md; leave_policy.md",
+    "expected_section": "Condonation of Attendance Shortage; Medical Leave and Health Center Certification",
+    "retrieval_latency_ms": 42.51,
+    "retrieved_chunks": [
+      {
+        "chunk_id": "attendance_policy_chunk_02",
+        "doc_id": "attendance_policy",
+        "doc_title": "University Attendance Policy",
+        "section": "Condonation of Attendance Shortage",
+        "similarity_score": 0.7806,
+        "text": "[University Attendance Policy > Condonation of Attendance Shortage]\nStudents with attendance between 65% and 74.9% may apply to the Dean of Academic Affairs for attendance condonation on genuine medical or compassionate grounds. The application must include an official medical certificate issued by a registered medical practitioner within seven working days of returning to campus, along with a nominal condonation fee. Condonation is granted at the sole discretion of the Academic Review Board."
+      },
+      {
+        "chunk_id": "leave_policy_chunk_02",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Medical Leave and Health Center Certification",
+        "similarity_score": 0.7535,
+        "text": "[Student Leave Regulations and Protocols > Medical Leave and Health Center Certification]\nIn the event of severe illness or hospitalization, medical leave up to a maximum of 15 calendar days per semester may be recognized. The student or guardian must notify the Department Head within 48 hours of illness onset. Upon return, the student must report to the University Health Center for fitness verification with original hospital discharge summaries and medical prescriptions."
+      },
+      {
+        "chunk_id": "leave_policy_chunk_04",
+        "doc_id": "leave_policy",
+        "doc_title": "Student Leave Regulations and Protocols",
+        "section": "Long-Term Semester Withdrawal",
+        "similarity_score": 0.7014,
+        "text": "[Student Leave Regulations and Protocols > Long-Term Semester Withdrawal]\nA student who experiences prolonged medical incapacitation requiring absence of more than four continuous weeks may petition the Academic Council for a formal Semester Withdrawal without academic penalty. Courses for that semester will be marked as 'Withdrawn' (W) and tuition fee adjustment is governed by university refund bylaws."
+      }
+    ],
+    "error": null
+  }
+]
