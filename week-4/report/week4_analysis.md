@@ -820,3 +820,119 @@ The evaluation confirms that:
 - Retrieval quality (73.68%) is an independent architectural factor that bounds the information available to the generator.
 
 Exercise 6 will address repository-level codebase understanding using the existing application.
+
+---
+
+# 6. Repository / Codebase Understanding
+
+## 6.1 Objective
+
+Exercise 6 investigated whether the existing University Knowledge Assistant could answer questions requiring understanding of multiple files, modules, and components in the application repository.
+
+The existing LLM + RAG system was tested without modifying the application, retrieval pipeline, or knowledge base. This was intentionally done to evaluate the repository-level understanding capability of the system as it existed after Exercise 5.
+
+## 6.2 Methodology
+
+Six repository-level questions were submitted through the existing `/api/rag` endpoint using the same RAG pipeline developed in Week 3.
+
+For each question, the following were examined:
+
+1. The question submitted to the RAG system.
+2. The retrieved context returned by the existing retrieval service.
+3. The generated LLM response.
+4. The actual repository implementation used as ground truth.
+
+The repository source files used for verification were:
+
+- `app/static/app.js` — frontend client logic
+- `app/main.py` — application API
+- `app/services/orchestrator.py` — multi-service orchestration
+- `services/retrieval_service/main.py` — retrieval and cosine similarity
+- `services/llm_service/main.py` — Ollama model interface
+- `docker-compose.yml` — container and service networking configuration
+
+## 6.3 Repository-Level Evaluation Results
+
+| ID | Repository-Level Question | Result | Observed Behavior |
+|---|---|---|---|
+| Q1 | Trace a student question from the frontend through the application service, retrieval service, and LLM service. Which files are involved? | Failed | Generated a generic architecture description and did not identify the actual repository files. Retrieved context contained university policy documents. |
+| Q2 | Which function in the application service calls the Retrieval Service, and what endpoint does it call? | Failed | Invented a nonexistent user-information endpoint instead of identifying `orchestrate_workflow()` and `POST /retrieve`. |
+| Q3 | How does the Retrieval Service calculate similarity and select the top-k chunks? | Failed | Gave a generic explanation mentioning alternatives such as bag-of-words and Jaccard similarity. The actual implementation uses Ollama embeddings, pure-Python cosine similarity, descending sorting, and top-k selection. |
+| Q4 | How does the LLM Service determine which Ollama model to use? | Failed | Gave a generic explanation of Ollama and did not identify the repository's model-selection logic. |
+| Q5 | How does the Dockerized application communicate with Ollama running outside the containers? | Failed | Listed generic Docker networking possibilities instead of identifying `host.docker.internal`, `host-gateway`, and the actual Compose configuration. |
+| Q6 | What happens if the Retrieval Service cannot be reached? | Failed | Returned irrelevant university attendance-policy information instead of identifying the application's connection-error handling. |
+
+### 6.3.1 Quantitative Summary
+
+- Repository-level questions tested: **6**
+- Questions demonstrating reliable repository-level understanding: **0**
+- Questions failing to demonstrate reliable repository-level understanding: **6**
+- Observed success rate: **0/6 = 0%**
+
+The result should be interpreted within the scope of this experiment. It does not mean that the underlying LLM or RAG pipeline is unusable for its intended university-policy question-answering task. It shows that the existing retrieval corpus does not support repository-level code understanding.
+
+## 6.4 Ground-Truth Comparison
+
+The actual repository contains the information required to answer the questions, but this information is not present in the RAG knowledge base.
+
+For example, `app/services/orchestrator.py` contains the `orchestrate_workflow()` function. It sends an HTTP `POST` request to the Retrieval Service's `/retrieve` endpoint, constructs the context-augmented prompt, and then sends an HTTP `POST` request to the LLM Service's `/generate` endpoint.
+
+Similarly, `services/retrieval_service/main.py` contains the `cosine_similarity()` implementation and the retrieval procedure that generates a query embedding, loads `knowledge_base.json`, calculates similarity for each chunk, sorts the results in descending order, and selects the requested top-k chunks.
+
+The LLM Service implementation in `services/llm_service/main.py` determines the model using the request model when supplied, otherwise falling back to its configured default model. The default configuration resolves through `OLLAMA_MODEL`, `MODEL_NAME`, and finally `codellama:7b-instruct`.
+
+**The Docker configuration** in `docker-compose.yml` explicitly maps `host.docker.internal` to `host-gateway` and uses `http://host.docker.internal:11434` for communication with Ollama running outside the containers.
+
+None of this source-code information was retrieved during the repository-level tests.
+
+## 6.5 Retrieval Limitation
+
+The main limitation identified by the experiment is the mismatch between the question domain and the retrieval corpus.
+
+The current knowledge base contains university policy documents such as attendance, examination, leave, and campus-facility policies. It does not contain the application's source-code files.
+
+Therefore, when a repository-level question is submitted, the retrieval service still searches the policy corpus. The retrieved chunks are consequently unrelated to the requested source-code information.
+
+This creates the following failure pattern:
+
+```text
+Repository-Level Question
+        ↓
+Existing RAG Retrieval
+        ↓
+University Policy Knowledge Base
+        ↓
+Irrelevant / Insufficient Context
+        ↓
+LLM
+        ↓
+Generic Answer / Incorrect Details / Hallucination
+```
+The experiment therefore demonstrates that retrieval quality is dependent not only on the similarity mechanism but also on whether the retrieval corpus contains the information required by the question.
+
+## 6.6 Key Findings
+Finding 1 — Domain-specific RAG does not provide repository understanding
+
+The existing RAG pipeline performs retrieval over university-policy documents. It therefore supports the application's original domain but does not provide access to repository source code.
+
+Finding 2 — Missing source-code context leads to unsupported answers
+
+Several responses contained implementation details that were not present in the retrieved context and did not match the actual repository. Examples included an invented attendance-related API in Q2 and generic Docker networking options in Q5.
+
+Finding 3 — The LLM cannot compensate reliably for missing repository context
+
+Even though the underlying model has general programming knowledge, the experiment showed that it cannot be relied upon to reconstruct the specific implementation of this repository when the source code is absent from the retrieval corpus.
+
+Finding 4 — Repository-level understanding requires repository-aware retrieval
+
+To answer questions such as file tracing, function relationships, request flows, and component impact, the retrieval system would need access to source-code files and a retrieval strategy appropriate for code.
+
+## 6.7 Exercise 6 Conclusion
+
+Exercise 6 demonstrated a clear boundary of the existing University Knowledge Assistant.
+
+The system can perform RAG over its university-policy knowledge base, but the same retrieval pipeline does not demonstrate reliable repository-level codebase understanding. All six repository-level questions failed to produce answers grounded in the actual source code.
+
+This experiment establishes the need for a repository-aware retrieval layer if the system is later extended to answer questions about files, functions, modules, dependencies, and code flows.
+
+Sourcegraph and more advanced repository-level code understanding techniques are covered in the following week's activity and were therefore not implemented as part of this exercise.
