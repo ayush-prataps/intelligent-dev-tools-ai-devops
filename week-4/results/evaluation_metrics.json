@@ -1,0 +1,133 @@
+{
+  "evaluation_methodology": {
+    "questions": 20,
+    "correctness_scale": "0-2",
+    "relevance_scale": "0-2",
+    "retrieval_quality": "1 if expected source and section are retrieved",
+    "hallucination": "1 if response contains an unsupported factual claim",
+    "latency": "llm_latency_ms",
+    "token_usage": "prompt_eval_count + eval_count"
+  },
+  "models": [
+    {
+      "model": "codellama:7b-instruct",
+      "questions": 20,
+      "quality": {
+        "correctness": {
+          "score": 34,
+          "maximum": 40,
+          "percentage": 85.0
+        },
+        "relevance": {
+          "score": 30,
+          "maximum": 40,
+          "percentage": 75.0
+        },
+        "retrieval_quality": {
+          "relevant_questions": 14,
+          "total_questions": 19,
+          "percentage": 73.68
+        },
+        "hallucination_rate": {
+          "hallucinated_responses": 8,
+          "total_responses": 20,
+          "percentage": 40.0
+        }
+      },
+      "performance": {
+        "latency_ms": {
+          "average": 19322.82,
+          "median": 17366.62,
+          "minimum": 9613.36,
+          "maximum": 32231.86
+        },
+        "tokens": {
+          "average_input": 506.7,
+          "average_output": 175.95,
+          "average_total": 682.65,
+          "total": 13653
+        }
+      }
+    },
+    {
+      "model": "phi3:mini",
+      "questions": 20,
+      "quality": {
+        "correctness": {
+          "score": 40,
+          "maximum": 40,
+          "percentage": 100.0
+        },
+        "relevance": {
+          "score": 37,
+          "maximum": 40,
+          "percentage": 92.5
+        },
+        "retrieval_quality": {
+          "relevant_questions": 14,
+          "total_questions": 19,
+          "percentage": 73.68
+        },
+        "hallucination_rate": {
+          "hallucinated_responses": 1,
+          "total_responses": 20,
+          "percentage": 5.0
+        }
+      },
+      "performance": {
+        "latency_ms": {
+          "average": 11440.03,
+          "median": 8097.61,
+          "minimum": 4564.82,
+          "maximum": 72166.59
+        },
+        "tokens": {
+          "average_input": 495.7,
+          "average_output": 180.6,
+          "average_total": 676.3,
+          "total": 13526
+        }
+      }
+    },
+    {
+      "model": "qwen2.5:3b",
+      "questions": 20,
+      "quality": {
+        "correctness": {
+          "score": 38,
+          "maximum": 40,
+          "percentage": 95.0
+        },
+        "relevance": {
+          "score": 40,
+          "maximum": 40,
+          "percentage": 100.0
+        },
+        "retrieval_quality": {
+          "relevant_questions": 14,
+          "total_questions": 19,
+          "percentage": 73.68
+        },
+        "hallucination_rate": {
+          "hallucinated_responses": 1,
+          "total_responses": 20,
+          "percentage": 5.0
+        }
+      },
+      "performance": {
+        "latency_ms": {
+          "average": 6241.39,
+          "median": 5828.7,
+          "minimum": 2746.85,
+          "maximum": 14777.42
+        },
+        "tokens": {
+          "average_input": 418.2,
+          "average_output": 105.15,
+          "average_total": 523.35,
+          "total": 10467
+        }
+      }
+    }
+  ]
+}
