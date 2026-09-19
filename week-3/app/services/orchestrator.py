@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from app.config import RETRIEVAL_SERVICE_URL, LLM_SERVICE_URL, SERVICE_TIMEOUT_SECONDS, MODEL_NAME
 from app.schemas import OrchestrateResponse, TraceStep, RetrievedChunk
+from app.services.guardrails import validate_input, validate_retrieval, validate_output
 
 
 async def orchestrate_workflow(question: str, top_k: int = 3) -> OrchestrateResponse:
@@ -18,6 +19,11 @@ async def orchestrate_workflow(question: str, top_k: int = 3) -> OrchestrateResp
     """
     start_total = time.perf_counter()
     trace: List[TraceStep] = []
+
+    # Input guardrail: validate the question before retrieval.
+    input_valid, input_error = validate_input(question)
+    if not input_valid:
+        raise HTTPException(status_code=400, detail=input_error)
 
     # Step 1: Application Service receives request
     t1_start = time.perf_counter()
@@ -61,6 +67,11 @@ async def orchestrate_workflow(question: str, top_k: int = 3) -> OrchestrateResp
     retrieval_data = res_retrieval.json()
     raw_chunks = retrieval_data.get("retrieved_chunks", [])
     retrieved_chunks = [RetrievedChunk(**c) for c in raw_chunks]
+
+    # Retrieval guardrail: do not call the LLM without sufficient evidence.
+    retrieval_valid, retrieval_error = validate_retrieval(retrieved_chunks)
+    if not retrieval_valid:
+        raise HTTPException(status_code=422, detail=retrieval_error)
 
     trace.append(TraceStep(
         step=2,
@@ -128,6 +139,11 @@ async def orchestrate_workflow(question: str, top_k: int = 3) -> OrchestrateResp
 
     llm_data = res_llm.json()
     answer = llm_data.get("answer", "")
+
+    # Output guardrail: reject empty or invalid LLM output.
+    output_valid, output_error = validate_output(answer, retrieved_chunks)
+    if not output_valid:
+        raise HTTPException(status_code=422, detail=output_error)
 
     trace.append(TraceStep(
         step=4,

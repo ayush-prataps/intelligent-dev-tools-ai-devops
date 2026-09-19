@@ -936,3 +936,241 @@ The system can perform RAG over its university-policy knowledge base, but the sa
 This experiment establishes the need for a repository-aware retrieval layer if the system is later extended to answer questions about files, functions, modules, dependencies, and code flows.
 
 Sourcegraph and more advanced repository-level code understanding techniques are covered in the following week's activity and were therefore not implemented as part of this exercise.
+## 7. Guardrails and AI Output Testing
+
+### 7.1 Guardrail Objective
+
+The University Knowledge Assistant was extended with application-level guardrails to prevent unsupported or undesirable interactions from reaching the LLM and to validate generated responses before they are accepted.
+
+The guardrails are applied only to the `/api/orchestrate` workflow so that the earlier Week 3 exercises remain unchanged.
+
+The resulting workflow is:
+
+```text
+User Question
+      |
+      v
+Input Guardrail
+      |
+      v
+Retrieval Service
+      |
+      v
+Retrieval Guardrail
+      |
+      v
+Context-Augmented Prompt
+      |
+      v
+LLM Service
+      |
+      v
+Output Guardrail
+      |
+      v
+Final Response
+```
+
+### 7.2 Input Guardrail
+
+The input guardrail validates the question before retrieval begins.
+
+The following controls were implemented:
+
+* Empty questions are rejected.
+* Questions longer than 500 characters are rejected.
+
+The maximum input length prevents unnecessarily long or inappropriate requests from entering the retrieval and LLM pipeline.
+
+For example, a question exceeding 500 characters produces:
+
+```text
+Question exceeds the maximum allowed length of 500 characters.
+```
+
+This validation occurs before the Retrieval Service is called.
+
+### 7.3 Retrieval Guardrail
+
+The retrieval guardrail checks whether the retrieved context is sufficiently similar to the user's question before allowing the LLM to run.
+
+The implementation uses a minimum cosine-similarity threshold of:
+
+```text
+MIN_RETRIEVAL_SIMILARITY = 0.65
+```
+
+The threshold was selected empirically using the existing Week 4 retrieval evaluation results. In the frozen evaluation set, all 19 answerable questions had top retrieval similarity above 0.65, while the insufficient-context question Q18 had a top score below this threshold.
+
+The threshold is therefore a dataset-specific experimental choice rather than a universally optimal value.
+
+If no sufficiently relevant context is available, the system returns:
+
+```text
+I'm unable to answer this question from the available university knowledge base.
+Please ask a question related to university policies or information covered by the system.
+```
+
+Most importantly, the LLM Service is not called when this guardrail rejects the request.
+
+### 7.4 Without-Guardrail Demonstration
+
+The repository-level Exercise 6 already demonstrated the risk of allowing questions with unsupported context to reach the LLM.
+
+A direct test using:
+
+```text
+What is the university's policy for hostel room allocation?
+```
+
+produced an unsupported response before the retrieval guardrail was enabled. The knowledge base did not contain hostel room allocation information, but the LLM generated detailed hostel-policy information.
+
+This demonstrated the failure mode:
+
+```text
+Unsupported Question
+        |
+        v
+Irrelevant Retrieved Context
+        |
+        v
+LLM
+        |
+        v
+Unsupported / Hallucinated Answer
+```
+
+### 7.5 With-Guardrail Demonstration
+
+After introducing the retrieval guardrail, the same Q18 test produced the controlled refusal:
+
+```text
+I'm unable to answer this question from the available university knowledge base.
+Please ask a question related to university policies or information covered by the system.
+```
+
+The live retrieval score for this question was below the 0.65 threshold.
+
+The LLM Service logs also confirmed that no `/generate` request was made for the rejected question.
+
+The guarded flow therefore became:
+
+```text
+Hostel Policy Question
+        |
+        v
+Retrieval
+        |
+        v
+Similarity below threshold
+        |
+        v
+Guardrail Rejection
+        |
+        X
+      No LLM Call
+```
+
+### 7.6 Output Guardrail
+
+An additional output guardrail was implemented to check the generated response before it is returned to the user.
+
+The output guardrail performs three checks:
+
+1. The generated answer must not be empty.
+2. The answer must contain meaningful terms that overlap with the retrieved context.
+3. At least two meaningful grounding terms must be shared between the answer and retrieved context.
+
+Common stopwords are ignored, and terms are normalized before comparison.
+
+This is a lightweight deterministic grounding heuristic. It is intended to detect obviously unsupported outputs, not to prove complete factual correctness or semantic faithfulness.
+
+### 7.7 AI Output Testing Methodology
+
+The LLM output was treated as an artifact requiring validation rather than automatically accepting every generated response.
+
+The existing Week 4 evaluation dataset containing 20 questions was reused for systematic output testing.
+
+The automated test suite checked:
+
+| Test Area                   | Validation                                                   |
+| --------------------------- | ------------------------------------------------------------ |
+| Relevant supported question | Request succeeds with HTTP 200                               |
+| Non-empty response          | Answer must contain text                                     |
+| Grounding                   | Answer must share meaningful terms with retrieved context    |
+| Relevance                   | Answer must share meaningful terms with the question         |
+| Response format             | Required API response fields must be present                 |
+| Insufficient context        | System must return controlled refusal                        |
+| Unsupported information     | System must not accept an answer with insufficient grounding |
+
+The test implementation was added as:
+
+```text
+week-4/evaluation/test_output_guardrails.py
+```
+
+Results were stored in:
+
+```text
+week-4/results/ai_output_testing_results.json
+```
+
+### 7.8 AI Output Testing Results
+
+All 20 evaluation questions passed the automated output-testing suite.
+
+| Metric      | Result |
+| ----------- | -----: |
+| Total tests |     20 |
+| Passed      |     20 |
+| Failed      |      0 |
+| Pass rate   |   100% |
+
+The test set included direct factual questions, multi-condition reasoning, policy comparisons, procedures, edge cases, insufficient-context questions, and multi-document questions.
+
+Q18 specifically tested the insufficient-context behavior:
+
+```text
+What is the university's policy for hostel room allocation?
+```
+
+Instead of accepting an unsupported answer, the system correctly returned the controlled refusal.
+
+Therefore, the output-testing suite verified both normal grounded responses and controlled handling of unavailable information.
+
+### 7.9 Guardrail Findings
+
+**Finding 1 — Input validation prevents excessively long requests**
+
+The 500-character input limit rejects oversized questions before they enter the retrieval and LLM pipeline.
+
+**Finding 2 — Retrieval similarity can act as an early protection layer**
+
+The 0.65 similarity threshold prevents clearly unsupported questions from reaching the LLM when the retrieval result is insufficiently relevant.
+
+**Finding 3 — Guardrails reduce unsupported generation**
+
+The Q18 experiment demonstrated that an unsupported question could previously result in an invented answer, while the guarded pipeline instead rejected the request before the LLM was called.
+
+**Finding 4 — Output validation provides a second protection layer**
+
+Even after retrieval and generation, the output guardrail checks whether the answer contains terms supported by the retrieved context.
+
+**Finding 5 — Deterministic guardrails are explainable but limited**
+
+The implemented output check is a simple lexical grounding heuristic. It can detect obvious mismatches but cannot guarantee factual correctness, detect every hallucination, or fully understand semantic contradictions.
+
+### 7.10 Extension Conclusion
+
+The guardrail and AI Output Testing extension adds two layers of control to the University Knowledge Assistant.
+
+The input and retrieval guardrails prevent unsuitable requests and insufficient-context questions from progressing unnecessarily through the pipeline. The output guardrail then validates generated responses against retrieved context.
+
+The systematic AI Output Testing suite achieved:
+
+```text
+20 / 20 tests passed
+100% automated test pass rate
+```
+
+The result demonstrates that the extended pipeline can combine retrieval-based generation with deterministic validation and controlled refusal behavior. The result should be interpreted within the scope of the current 20-question evaluation dataset and the lightweight grounding heuristic used by the output guardrail.
