@@ -70,7 +70,8 @@ def validate_output(answer: str, retrieved_chunks) -> tuple[bool, str]:
 
     grounding_terms = context_terms.intersection(answer_terms)
 
-    if len(grounding_terms) < MIN_GROUNDING_TERMS:
+    required_terms = min(MIN_GROUNDING_TERMS, len(context_terms))
+    if len(grounding_terms) < required_terms:
         return False, GUARDRAIL_REFUSAL
 
     return True, ""

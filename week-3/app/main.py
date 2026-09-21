@@ -154,11 +154,24 @@ async def orchestrate_request(payload: OrchestrateRequest):
 # ===================================================
 import json
 
+def _find_week4_file(filename: str, subfolder: str = "results") -> Optional[str]:
+    candidates = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "week-4", subfolder, filename)),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "static", "data", filename)),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "week4", filename)),
+        os.path.abspath(os.path.join("/app", "week-4", subfolder, filename)),
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    return None
+
+
 @app.get("/api/week4/metrics")
 def get_week4_metrics():
     """Retrieve real evaluation metrics for Code Llama 7B, Phi-3 Mini, and Qwen 2.5 3B."""
-    metrics_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "week-4", "results", "evaluation_metrics.json"))
-    if os.path.exists(metrics_path):
+    metrics_path = _find_week4_file("evaluation_metrics.json", "results")
+    if metrics_path and os.path.exists(metrics_path):
         with open(metrics_path, "r", encoding="utf-8") as f:
             return json.load(f)
     return {"error": "Metrics file not found", "models": []}
@@ -167,21 +180,32 @@ def get_week4_metrics():
 @app.get("/api/week4/repository-analysis")
 def get_week4_repo_analysis():
     """Retrieve Exercise 6 codebase understanding evaluation results."""
-    repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "week-4", "results", "exercise6_repository_analysis.json"))
-    if os.path.exists(repo_path):
+    repo_path = _find_week4_file("exercise6_repository_analysis.json", "results")
+    if repo_path and os.path.exists(repo_path):
         with open(repo_path, "r", encoding="utf-8") as f:
             return json.load(f)
     return {"error": "Repository analysis file not found", "results": []}
 
 
+@app.get("/api/week4/guardrails")
+def get_week4_guardrails():
+    """Retrieve AI Output Testing and Guardrail Evaluation results."""
+    guard_path = _find_week4_file("ai_output_testing_results.json", "results")
+    if guard_path and os.path.exists(guard_path):
+        with open(guard_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"error": "Guardrails file not found", "tests": []}
+
+
 @app.get("/api/week4/questions")
 def get_week4_questions():
     """Retrieve Week 4 evaluation question dataset."""
-    q_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "week-4", "data", "evaluation_questions.json"))
-    if os.path.exists(q_path):
+    q_path = _find_week4_file("evaluation_questions.json", "data")
+    if q_path and os.path.exists(q_path):
         with open(q_path, "r", encoding="utf-8") as f:
             return json.load(f)
     return {"error": "Questions file not found", "questions": []}
+
 
 
 # Mount static directory for frontend UI

@@ -1,0 +1,54 @@
+{
+  "exercise": "Exercise 6 - Repository / Codebase Understanding",
+  "application": "University Knowledge Assistant",
+  "method": "Test the existing LLM + RAG system on repository-level questions without modifying the application or retrieval corpus.",
+  "questions_tested": 6,
+  "results": [
+    {
+      "id": "Q1",
+      "question": "Trace a student question from the frontend through the application service, retrieval service, and LLM service. Which files are involved?",
+      "result": "failed",
+      "finding": "The model generated a generic architecture and did not identify the actual repository files. Retrieved context contained only university policy documents."
+    },
+    {
+      "id": "Q2",
+      "question": "Which function in the application service calls the Retrieval Service, and what endpoint does it call?",
+      "result": "failed",
+      "finding": "The model invented a nonexistent user-information endpoint and did not identify orchestrate_workflow() or POST /retrieve."
+    },
+    {
+      "id": "Q3",
+      "question": "How does the Retrieval Service calculate similarity and select the top-k chunks?",
+      "result": "failed",
+      "finding": "The model gave a generic explanation mentioning alternatives such as bag-of-words and Jaccard similarity. The actual implementation uses Ollama embeddings, pure-Python cosine similarity, descending sort, and top-k selection."
+    },
+    {
+      "id": "Q4",
+      "question": "How does the LLM Service determine which Ollama model to use?",
+      "result": "failed",
+      "finding": "The model gave a generic explanation of Ollama and did not identify the actual model-selection logic."
+    },
+    {
+      "id": "Q5",
+      "question": "How does the Dockerized application communicate with Ollama running outside the containers?",
+      "result": "failed",
+      "finding": "The model listed generic Docker networking possibilities. It did not identify host.docker.internal, host-gateway, or the actual Docker Compose configuration."
+    },
+    {
+      "id": "Q6",
+      "question": "What happens if the Retrieval Service cannot be reached?",
+      "result": "failed",
+      "finding": "The model responded with irrelevant university attendance policy information instead of identifying the application's Retrieval Service connection-error handling."
+    }
+  ],
+  "repository_ground_truth": {
+    "frontend": "app/static/app.js",
+    "application_api": "app/main.py",
+    "orchestration": "app/services/orchestrator.py",
+    "retrieval_service": "services/retrieval_service/main.py",
+    "llm_service": "services/llm_service/main.py",
+    "docker_configuration": "docker-compose.yml"
+  },
+  "overall_finding": "The existing RAG system did not demonstrate reliable repository-level codebase understanding. All six repository-level questions failed because the retrieval corpus contains university policy documents rather than source-code files. The model therefore lacked repository-grounded context and either produced generic answers, invented implementation details, or returned irrelevant policy information.",
+  "scope_note": "The exercise evaluated the existing LLM + RAG system as required. No repository-aware retrieval system, Sourcegraph integration, or coding agent was implemented."
+}
