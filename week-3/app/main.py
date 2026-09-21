@@ -149,7 +149,43 @@ async def orchestrate_request(payload: OrchestrateRequest):
     return result
 
 
+# ===================================================
+# Week 4 Evaluation API Endpoints (Read-Only Data)
+# ===================================================
+import json
+
+@app.get("/api/week4/metrics")
+def get_week4_metrics():
+    """Retrieve real evaluation metrics for Code Llama 7B, Phi-3 Mini, and Qwen 2.5 3B."""
+    metrics_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "week-4", "results", "evaluation_metrics.json"))
+    if os.path.exists(metrics_path):
+        with open(metrics_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"error": "Metrics file not found", "models": []}
+
+
+@app.get("/api/week4/repository-analysis")
+def get_week4_repo_analysis():
+    """Retrieve Exercise 6 codebase understanding evaluation results."""
+    repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "week-4", "results", "exercise6_repository_analysis.json"))
+    if os.path.exists(repo_path):
+        with open(repo_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"error": "Repository analysis file not found", "results": []}
+
+
+@app.get("/api/week4/questions")
+def get_week4_questions():
+    """Retrieve Week 4 evaluation question dataset."""
+    q_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "week-4", "data", "evaluation_questions.json"))
+    if os.path.exists(q_path):
+        with open(q_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"error": "Questions file not found", "questions": []}
+
+
 # Mount static directory for frontend UI
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+
