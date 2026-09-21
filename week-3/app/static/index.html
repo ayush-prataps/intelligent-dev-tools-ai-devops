@@ -52,6 +52,24 @@
           <span class="tab-badge">Ex 4</span>
         </button>
 
+        <button type="button" class="tab-btn" id="tab-guardrails" data-target="view-guardrails" role="tab" aria-selected="false" title="Guardrails Live Comparison">
+          <span class="tab-icon">🛡️</span>
+          <span class="tab-label">Guardrails Live</span>
+          <span class="tab-badge">Demo</span>
+        </button>
+
+        <button type="button" class="tab-btn" id="tab-live-models" data-target="view-live-models" role="tab" aria-selected="false" title="Live Model Comparison">
+          <span class="tab-icon">🚀</span>
+          <span class="tab-label">Live Models</span>
+          <span class="tab-badge">Demo</span>
+        </button>
+
+        <button type="button" class="tab-btn" id="tab-codebase" data-target="view-codebase" role="tab" aria-selected="false" title="Codebase & Repository Understanding">
+          <span class="tab-icon">💻</span>
+          <span class="tab-label">Codebase</span>
+          <span class="tab-badge">Sourcegraph</span>
+        </button>
+
         <button type="button" class="tab-btn" id="tab-kb" data-target="view-kb" role="tab" aria-selected="false" title="Knowledge Base Inspector (Exercise 2)">
           <span class="tab-icon">📚</span>
           <span class="tab-label">Knowledge Base</span>
@@ -435,6 +453,330 @@
               </div>
               <div id="orch-chunks-list" class="retrieved-chunks-grid"></div>
             </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           TAB: GUARDRAILS LIVE COMPARISON
+           =================================================== -->
+      <section id="view-guardrails" class="tab-view hidden">
+        <div class="content-card card-white">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">Live Guardrails Comparison</h2>
+              <p class="card-subtitle">Evaluate live responses side-by-side with and without safety, length, and grounding guardrails</p>
+            </div>
+            <span class="pill-badge pill-purple">Live Safety Guardrails</span>
+          </div>
+
+          <div class="rag-info-banner">
+            <span class="info-icon">🛡️</span>
+            <div>
+              <strong>Guardrail Pipeline:</strong>
+              Validates input length (&le;500 chars), minimum retrieval similarity (&ge;0.65), and minimum grounded terms (&ge;2). Compare raw LLM completions against guarded outputs in real time.
+            </div>
+          </div>
+
+          <form id="guardrails-form">
+            <div class="form-group">
+              <label for="guardrails-question-input" class="form-label">Test Question for Guardrails</label>
+              <textarea
+                id="guardrails-question-input"
+                name="guardrails-question"
+                rows="3"
+                placeholder="e.g. Ask a university policy question (e.g. 'What is the attendance rule?') or an off-topic query (e.g. 'How do I cook pasta?')."
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-options-row">
+              <button type="submit" id="btn-guardrails-run" class="btn-dark">
+                🛡️ Run Guardrails Comparison
+              </button>
+            </div>
+          </form>
+
+          <!-- Loading State -->
+          <div id="guardrails-loading-state" class="state-box hidden" role="status" aria-live="polite">
+            <div class="spinner"></div>
+            <p id="guardrails-loading-text">Running unguarded generation and validating guardrails pipeline...</p>
+          </div>
+
+          <!-- Output Side-by-Side Comparison -->
+          <div id="guardrails-output-container" class="hidden">
+            <div class="compare-grid">
+              <!-- Left Column: Without Guardrails -->
+              <div class="compare-column card-pink">
+                <div class="compare-col-header">
+                  <h3>Without Guardrails</h3>
+                  <span class="pill-badge pill-pink">Unguarded Direct LLM</span>
+                </div>
+                <p class="compare-hint">Raw completion without input length, retrieval evidence, or grounding validation.</p>
+                <div id="guardrails-unguarded-answer" class="response-text compare-text"></div>
+              </div>
+
+              <!-- Right Column: With Guardrails -->
+              <div class="compare-column card-green" id="guardrails-guarded-card">
+                <div class="compare-col-header">
+                  <h3>With Guardrails</h3>
+                  <span id="guardrails-status-badge" class="pill-badge pill-green">PASSED</span>
+                </div>
+                <p class="compare-hint">Validated output enforcing input length, similarity thresholds, and grounded context.</p>
+                
+                <div class="guardrail-reason-box" id="guardrails-reason-box">
+                  <strong>Guardrail Analysis / Status:</strong>
+                  <span id="guardrails-reason-text">Passed all validation checks.</span>
+                </div>
+
+                <div id="guardrails-guarded-answer" class="response-text compare-text" style="margin-top: 0.75rem;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           TAB: LIVE MODEL COMPARISON
+           =================================================== -->
+      <section id="view-live-models" class="tab-view hidden">
+        <div class="content-card card-white">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">Live Multi-Model Comparison</h2>
+              <p class="card-subtitle">Run the same question concurrently across Code Llama 7B, Phi-3 Mini, and Qwen 2.5 3B with live metrics</p>
+            </div>
+            <span class="pill-badge pill-purple">Live Model Benchmarking</span>
+          </div>
+
+          <div class="rag-info-banner">
+            <span class="info-icon">⚡</span>
+            <div>
+              <strong>Live Inference:</strong>
+              Sends your prompt concurrently to each model API and records actual live completion latency and token metrics. Historical Week 4 benchmark metrics are kept separate in the Week 4 Evaluation tab.
+            </div>
+          </div>
+
+          <form id="live-models-form">
+            <div class="form-group">
+              <label for="live-models-question-input" class="form-label">Ask Live Multi-Model Question</label>
+              <textarea
+                id="live-models-question-input"
+                name="live-models-question"
+                rows="3"
+                placeholder="e.g. Write a Python function for binary search with comments, or explain how vector similarity search works."
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-options-row">
+              <button type="submit" id="btn-live-models-run" class="btn-dark">
+                🚀 Compare Models Live
+              </button>
+            </div>
+          </form>
+
+          <!-- 3-Model Pastel Card Grid -->
+          <div id="live-models-grid" class="live-models-grid" style="margin-top: 1.5rem;">
+            
+            <!-- Code Llama 7B Card -->
+            <div class="live-model-card card-lavender" id="card-model-codellama">
+              <div class="live-model-card-header">
+                <div>
+                  <h3 class="live-model-title">Code Llama 7B</h3>
+                  <span class="live-model-tag">codellama:7b-instruct</span>
+                </div>
+                <span class="pill-badge pill-purple">7B Params</span>
+              </div>
+              
+              <div id="codellama-status" class="model-status-box hidden">
+                <div class="spinner spinner-sm"></div>
+                <span>Generating response...</span>
+              </div>
+
+              <div id="codellama-response" class="response-text live-model-response-text">
+                <p class="placeholder-text">Submit a question above to trigger live generation for Code Llama 7B.</p>
+              </div>
+
+              <div class="live-model-metrics-row">
+                <div class="live-metric">
+                  <span class="live-metric-label">Latency</span>
+                  <span class="live-metric-val font-mono" id="codellama-latency">-</span>
+                </div>
+                <div class="live-metric">
+                  <span class="live-metric-label">Eval Tokens</span>
+                  <span class="live-metric-val font-mono" id="codellama-eval-tokens">-</span>
+                </div>
+                <div class="live-metric">
+                  <span class="live-metric-label">Prompt Tokens</span>
+                  <span class="live-metric-val font-mono" id="codellama-prompt-tokens">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phi-3 Mini Card -->
+            <div class="live-model-card card-green" id="card-model-phi3">
+              <div class="live-model-card-header">
+                <div>
+                  <h3 class="live-model-title">Phi-3 Mini</h3>
+                  <span class="live-model-tag">phi3:mini</span>
+                </div>
+                <span class="pill-badge pill-green">3.8B Params</span>
+              </div>
+
+              <div id="phi3-status" class="model-status-box hidden">
+                <div class="spinner spinner-sm"></div>
+                <span>Generating response...</span>
+              </div>
+
+              <div id="phi3-response" class="response-text live-model-response-text">
+                <p class="placeholder-text">Submit a question above to trigger live generation for Phi-3 Mini.</p>
+              </div>
+
+              <div class="live-model-metrics-row">
+                <div class="live-metric">
+                  <span class="live-metric-label">Latency</span>
+                  <span class="live-metric-val font-mono" id="phi3-latency">-</span>
+                </div>
+                <div class="live-metric">
+                  <span class="live-metric-label">Eval Tokens</span>
+                  <span class="live-metric-val font-mono" id="phi3-eval-tokens">-</span>
+                </div>
+                <div class="live-metric">
+                  <span class="live-metric-label">Prompt Tokens</span>
+                  <span class="live-metric-val font-mono" id="phi3-prompt-tokens">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Qwen 2.5 3B Card -->
+            <div class="live-model-card card-blue" id="card-model-qwen">
+              <div class="live-model-card-header">
+                <div>
+                  <h3 class="live-model-title">Qwen 2.5 3B</h3>
+                  <span class="live-model-tag">qwen2.5:3b</span>
+                </div>
+                <span class="pill-badge pill-blue">3B Params</span>
+              </div>
+
+              <div id="qwen-status" class="model-status-box hidden">
+                <div class="spinner spinner-sm"></div>
+                <span>Generating response...</span>
+              </div>
+
+              <div id="qwen-response" class="response-text live-model-response-text">
+                <p class="placeholder-text">Submit a question above to trigger live generation for Qwen 2.5 3B.</p>
+              </div>
+
+              <div class="live-model-metrics-row">
+                <div class="live-metric">
+                  <span class="live-metric-label">Latency</span>
+                  <span class="live-metric-val font-mono" id="qwen-latency">-</span>
+                </div>
+                <div class="live-metric">
+                  <span class="live-metric-label">Eval Tokens</span>
+                  <span class="live-metric-val font-mono" id="qwen-eval-tokens">-</span>
+                </div>
+                <div class="live-metric">
+                  <span class="live-metric-label">Prompt Tokens</span>
+                  <span class="live-metric-val font-mono" id="qwen-prompt-tokens">-</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           TAB: CODEBASE UNDERSTANDING (SOURCEGRAPH INTEGRATION)
+           =================================================== -->
+      <section id="view-codebase" class="tab-view hidden">
+        <div class="content-card card-white">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">Codebase Understanding</h2>
+              <p class="card-subtitle">Ask questions about the project repository and understand how files, modules, and services work together.</p>
+            </div>
+            <span class="pill-badge pill-purple">Sourcegraph</span>
+          </div>
+
+          <div class="rag-info-banner">
+            <span class="info-icon">💻</span>
+            <div>
+              <strong>Repository Understanding (Sourcegraph Integration):</strong>
+              Analyze request execution flows, file dependencies, and architectural patterns across the repository using Sourcegraph semantic search and LLM context synthesis.
+            </div>
+          </div>
+
+          <form id="codebase-form">
+            <div class="form-group">
+              <label for="codebase-question-input" class="form-label">Ask About the Codebase</label>
+              <textarea
+                id="codebase-question-input"
+                name="codebase-question"
+                rows="4"
+                placeholder="Ask how a feature or request flows through the codebase... (e.g. 'How does the /api/ask request flow through the application?')"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-options-row">
+              <button type="submit" id="btn-codebase-run" class="btn-dark">
+                🔍 Analyze Codebase
+              </button>
+            </div>
+          </form>
+
+          <!-- Loading State -->
+          <div id="codebase-loading-state" class="state-box hidden" role="status" aria-live="polite">
+            <div class="spinner"></div>
+            <p id="codebase-loading-text">Analyzing repository...</p>
+          </div>
+
+          <!-- Error Banner -->
+          <div id="codebase-error-state" class="state-box error-box hidden" role="alert">
+            <span class="error-icon">⚠️</span>
+            <div class="error-content">
+              <strong>Codebase Analysis Error:</strong>
+              <span id="codebase-error-message"></span>
+            </div>
+          </div>
+
+          <!-- Output Container -->
+          <div id="codebase-output-container" class="hidden" style="margin-top: 1.5rem;">
+            
+            <!-- Answer Section -->
+            <section class="response-section card-green" id="codebase-answer-section">
+              <div class="response-header">
+                <h3>Codebase Explanation</h3>
+                <button type="button" id="codebase-copy-btn" class="btn-copy">Copy Explanation</button>
+              </div>
+              <div id="codebase-answer-text" class="response-text"></div>
+            </section>
+
+            <!-- Files Analyzed Section -->
+            <section class="codebase-files-section card-white" id="codebase-files-section" style="margin-top: 1.5rem;">
+              <div class="panel-header">
+                <div>
+                  <h3 class="panel-title">Files Analyzed</h3>
+                  <p class="panel-subtitle">Repository files inspected by Sourcegraph for this query</p>
+                </div>
+                <span class="pill-badge pill-purple" id="codebase-files-count">0 Files</span>
+              </div>
+              <div id="codebase-files-list" class="codebase-files-box"></div>
+            </section>
+
+            <!-- Sources Section -->
+            <section class="codebase-sources-section" id="codebase-sources-section" style="margin-top: 1.5rem;">
+              <div class="context-header">
+                <h3>Sources & Code Snippets</h3>
+                <span class="similarity-info-tag">Sourcegraph Code Matches</span>
+              </div>
+              <p class="context-subtext">Exact line ranges and code context returned by the backend:</p>
+              <div id="codebase-sources-list" class="codebase-sources-grid"></div>
+            </section>
+
           </div>
         </div>
       </section>
