@@ -3,369 +3,589 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>University Knowledge Assistant</title>
+  <title>University Knowledge Assistant — AI DevOps Lab</title>
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <header class="app-header">
-      <h1>University Knowledge Assistant</h1>
-      <p class="subtitle">Course rules, academic policies, and AI microservice orchestration</p>
-      
-      <!-- Tab Navigation -->
+  <div class="dashboard-container">
+    
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- ===================================================
+         SIDEBAR NAVIGATION (Collapsible Icon Rail + Overlay)
+         =================================================== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+      <div class="sidebar-brand">
+        <div class="brand-icon" title="UniAssistant">🎓</div>
+        <div class="brand-text">
+          <h2>UniAssistant</h2>
+          <span class="brand-badge">AI Knowledge Hub</span>
+        </div>
+        <button type="button" class="sidebar-toggle-icon" id="sidebar-collapse-btn" title="Toggle Navigation">
+          ◀
+        </button>
+      </div>
+
+      <div class="sidebar-section-title">MAIN MENU</div>
+
       <nav class="nav-tabs" role="tablist">
-        <button type="button" class="tab-btn active" id="tab-ask" data-target="view-ask" role="tab" aria-selected="true">
-          💬 Direct LLM (Ex 1)
+        <button type="button" class="tab-btn active" id="tab-ask" data-target="view-ask" role="tab" aria-selected="true" title="Direct LLM (Exercise 1)">
+          <span class="tab-icon">💬</span>
+          <span class="tab-label">Direct LLM</span>
+          <span class="tab-badge">Ex 1</span>
         </button>
-        <button type="button" class="tab-btn" id="tab-rag" data-target="view-rag" role="tab" aria-selected="false">
-          🔍 RAG & Compare (Ex 3)
+
+        <button type="button" class="tab-btn" id="tab-rag" data-target="view-rag" role="tab" aria-selected="false" title="RAG & Compare (Exercise 3)">
+          <span class="tab-icon">🔍</span>
+          <span class="tab-label">RAG & Compare</span>
+          <span class="tab-badge">Ex 3</span>
         </button>
-        <button type="button" class="tab-btn" id="tab-orchestrate" data-target="view-orchestrate" role="tab" aria-selected="false">
-          ⚙️ Orchestrated Flow (Ex 4)
+
+        <button type="button" class="tab-btn" id="tab-orchestrate" data-target="view-orchestrate" role="tab" aria-selected="false" title="Orchestrated Flow (Exercise 4)">
+          <span class="tab-icon">⚡</span>
+          <span class="tab-label">Orchestrated Flow</span>
+          <span class="tab-badge">Ex 4</span>
         </button>
-        <button type="button" class="tab-btn" id="tab-kb" data-target="view-kb" role="tab" aria-selected="false">
-          📚 Knowledge Base (Ex 2)
+
+        <button type="button" class="tab-btn" id="tab-kb" data-target="view-kb" role="tab" aria-selected="false" title="Knowledge Base Inspector (Exercise 2)">
+          <span class="tab-icon">📚</span>
+          <span class="tab-label">Knowledge Base</span>
+          <span class="tab-badge">Ex 2</span>
+        </button>
+
+        <button type="button" class="tab-btn" id="tab-week4" data-target="view-week4" role="tab" aria-selected="false" title="Week 4 Model Evaluation">
+          <span class="tab-icon">📊</span>
+          <span class="tab-label">Week 4 Evaluation</span>
+          <span class="tab-badge">Ex 5/6</span>
         </button>
       </nav>
-    </header>
+
+      <!-- Sidebar Bottom System Info Card -->
+      <div class="sidebar-footer-card">
+        <div class="footer-card-header">
+          <span class="footer-dot active"></span>
+          <span>FastAPI & Ollama</span>
+        </div>
+        <p class="footer-card-text">Code Llama 7B & nomic-embed-text</p>
+        <span class="footer-pill">Microservices :8000–:8002</span>
+      </div>
+    </aside>
 
     <!-- ===================================================
-         TAB 1: DIRECT LLM (EXERCISE 1 - PRESERVED UNTOUCHED)
+         MAIN CONTENT AREA
          =================================================== -->
-    <main id="view-ask" class="tab-view active">
-      <div class="app-card">
-        <form id="ask-form">
-          <label for="question-input" class="form-label">Your Question (Direct Prompt to Code Llama)</label>
-          <textarea
-            id="question-input"
-            name="question"
-            rows="4"
-            placeholder="e.g. Explain how binary search trees work with a quick Python code example."
-            required
-          ></textarea>
+    <main class="main-content">
+      
+      <!-- Dashboard Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button type="button" class="btn-hamburger" id="sidebar-toggle-btn" title="Expand Navigation">
+            ☰
+          </button>
+          <div class="header-titles">
+            <h1>University Knowledge Assistant</h1>
+            <p class="header-subtitle">Ask questions about university policies, course rules, and microservice execution</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <div class="kb-status-indicator" id="header-kb-status">
+            <span class="status-dot" id="kb-status-dot"></span>
+            <span id="kb-status-text">Checking status...</span>
+          </div>
+          <button type="button" id="btn-reindex" class="btn-pastel-yellow">
+            ⚡ Re-index KB
+          </button>
+        </div>
+      </header>
+
+      <!-- Knowledge Base Summary Metric Cards (Top Dashboard Row) -->
+      <section class="metrics-grid">
+        <div class="metric-card card-yellow">
+          <div class="metric-icon">📄</div>
+          <div class="metric-body">
+            <span class="metric-label">University Documents</span>
+            <span class="metric-value" id="stat-docs">-</span>
+          </div>
+        </div>
+
+        <div class="metric-card card-pink">
+          <div class="metric-icon">🧩</div>
+          <div class="metric-body">
+            <span class="metric-label">Indexed Chunks</span>
+            <span class="metric-value" id="stat-chunks">-</span>
+          </div>
+        </div>
+
+        <div class="metric-card card-green">
+          <div class="metric-icon">🤖</div>
+          <div class="metric-body">
+            <span class="metric-label">Embedding Model</span>
+            <span class="metric-value font-mono" id="stat-model">-</span>
+          </div>
+        </div>
+
+        <div class="metric-card card-blue">
+          <div class="metric-icon">📐</div>
+          <div class="metric-body">
+            <span class="metric-label">Vector Dimensions</span>
+            <span class="metric-value font-mono" id="stat-dim">-</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           TAB 1: DIRECT LLM (EXERCISE 1)
+           =================================================== -->
+      <section id="view-ask" class="tab-view active">
+        <div class="content-card card-lavender">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">Direct LLM Query Workspace</h2>
+              <p class="card-subtitle">Direct prompt to Code Llama without knowledge base retrieval</p>
+            </div>
+            <span class="pill-badge pill-purple">Exercise 1</span>
+          </div>
+
+          <form id="ask-form">
+            <div class="form-group">
+              <label for="question-input" class="form-label">Your University Question</label>
+              <textarea
+                id="question-input"
+                name="question"
+                rows="4"
+                placeholder="e.g. Explain how binary search trees work with a quick Python code example, or ask a general question."
+                required
+              ></textarea>
+            </div>
+            
+            <div class="form-actions">
+              <span class="hint">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit</span>
+              <button type="submit" id="ask-btn" class="btn-dark">Ask Assistant</button>
+            </div>
+          </form>
+
+          <!-- Loading State -->
+          <div id="loading-state" class="state-box hidden" role="status" aria-live="polite">
+            <div class="spinner"></div>
+            <p>Generating answer with Code Llama...</p>
+          </div>
+
+          <!-- Error Banner -->
+          <div id="error-state" class="state-box error-box hidden" role="alert">
+            <span class="error-icon">⚠️</span>
+            <div class="error-content">
+              <strong>Error:</strong>
+              <span id="error-message"></span>
+            </div>
+          </div>
+
+          <!-- Response Output -->
+          <section id="response-container" class="response-section hidden" aria-live="polite">
+            <div class="response-header">
+              <h3>Direct LLM Response</h3>
+              <button type="button" id="copy-btn" class="btn-copy">Copy Response</button>
+            </div>
+            <div id="response-output" class="response-text"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           TAB 2: RAG & COMPARISON (EXERCISE 3)
+           =================================================== -->
+      <section id="view-rag" class="tab-view hidden">
+        <div class="content-card card-white">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">RAG Policy Search & Comparative Analysis</h2>
+              <p class="card-subtitle">Match student queries against university regulations via vector similarity search</p>
+            </div>
+            <span class="pill-badge pill-green">Exercise 3 Flow</span>
+          </div>
+
+          <div class="rag-info-banner">
+            <span class="info-icon">ℹ️</span>
+            <div>
+              <strong>Retrieval-Augmented Generation (RAG):</strong>
+              Questions are converted to query vectors, matched against the university policy knowledge base using cosine similarity, and provided as grounded context to Code Llama.
+            </div>
+          </div>
+
+          <form id="rag-form">
+            <div class="form-group">
+              <label for="rag-question-input" class="form-label">Ask About University Policies</label>
+              <textarea
+                id="rag-question-input"
+                name="rag-question"
+                rows="3"
+                placeholder="e.g. What is the minimum attendance requirement and can it be condoned on medical grounds?"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-options-row">
+              <div class="select-group">
+                <label for="rag-top-k">Retrieve Top-K Chunks:</label>
+                <select id="rag-top-k" class="custom-select">
+                  <option value="2">2 Chunks</option>
+                  <option value="3" selected>3 Chunks</option>
+                  <option value="5">5 Chunks</option>
+                </select>
+              </div>
+
+              <div class="btn-group">
+                <button type="button" id="btn-rag-ask" class="btn-dark">
+                  🔍 Ask with RAG
+                </button>
+                <button type="button" id="btn-rag-compare" class="btn-pastel-purple">
+                  ⚖️ Compare Direct vs RAG
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- RAG Loading State -->
+          <div id="rag-loading-state" class="state-box hidden" role="status" aria-live="polite">
+            <div class="spinner"></div>
+            <p id="rag-loading-text">Performing vector similarity search & running Code Llama...</p>
+          </div>
+
+          <!-- RAG Error Banner -->
+          <div id="rag-error-state" class="state-box error-box hidden" role="alert">
+            <span class="error-icon">⚠️</span>
+            <div class="error-content">
+              <strong>Error:</strong>
+              <span id="rag-error-message"></span>
+            </div>
+          </div>
+
+          <!-- RAG Single Response Output -->
+          <div id="rag-single-output-container" class="hidden">
+            <section class="response-section card-green">
+              <div class="response-header">
+                <h3>Grounded Assistant Response</h3>
+                <button type="button" id="rag-copy-btn" class="btn-copy">Copy Response</button>
+              </div>
+              <div id="rag-single-answer" class="response-text"></div>
+            </section>
+          </div>
+
+          <!-- Comparison Side-by-Side Output -->
+          <div id="rag-compare-output-container" class="hidden">
+            <div class="compare-grid">
+              <div class="compare-column card-pink">
+                <div class="compare-col-header">
+                  <h3>Direct LLM (Without Retrieval)</h3>
+                  <span class="pill-badge pill-pink">Exercise 1</span>
+                </div>
+                <p class="compare-hint">Raw completion without policy knowledge base.</p>
+                <div id="compare-direct-answer" class="response-text compare-text"></div>
+              </div>
+
+              <div class="compare-column card-green">
+                <div class="compare-col-header">
+                  <h3>RAG Augmented (With Context)</h3>
+                  <span class="pill-badge pill-green">Exercise 3</span>
+                </div>
+                <p class="compare-hint">Grounded response conditioned on retrieved policy chunks.</p>
+                <div id="compare-rag-answer" class="response-text compare-text"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Retrieved Context Chunks Display -->
+          <section id="retrieved-context-container" class="retrieved-context-section hidden">
+            <div class="context-header">
+              <h3>Retrieved Context Evidence (Cosine Similarity Ranking)</h3>
+              <span class="similarity-info-tag">Pure Python Cosine Similarity</span>
+            </div>
+            <p class="context-subtext">These policy chunks were retrieved from the knowledge base and injected into the prompt:</p>
+            <div id="retrieved-chunks-list" class="retrieved-chunks-grid"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           TAB 3: ORCHESTRATED FLOW (EXERCISE 4)
+           =================================================== -->
+      <section id="view-orchestrate" class="tab-view hidden">
+        
+        <!-- Microservices Topology Cards -->
+        <div class="topology-grid">
+          <div class="service-card card-yellow" id="card-app-service">
+            <div class="service-card-header">
+              <span class="service-port-pill">:8000</span>
+              <span class="service-status-dot active"></span>
+            </div>
+            <div class="service-card-title">Application Service</div>
+            <p class="service-card-desc">Gateway, Web UI & Orchestrator</p>
+            <span class="service-endpoint-tag">POST /api/orchestrate</span>
+          </div>
+
+          <div class="service-arrow-divider">➔</div>
+
+          <div class="service-card card-blue" id="card-retrieval-service">
+            <div class="service-card-header">
+              <span class="service-port-pill">:8001</span>
+              <span class="service-status-dot active"></span>
+            </div>
+            <div class="service-card-title">Retrieval Service</div>
+            <p class="service-card-desc">Embeddings & Cosine Search</p>
+            <span class="service-endpoint-tag">POST /retrieve</span>
+          </div>
+
+          <div class="service-arrow-divider">➔</div>
+
+          <div class="service-card card-pink" id="card-llm-service">
+            <div class="service-card-header">
+              <span class="service-port-pill">:8002</span>
+              <span class="service-status-dot active"></span>
+            </div>
+            <div class="service-card-title">LLM Service</div>
+            <p class="service-card-desc">Ollama Code Llama Interface</p>
+            <span class="service-endpoint-tag">POST /generate</span>
+          </div>
+        </div>
+
+        <div class="content-card card-white" style="margin-top: 1.5rem;">
+          <!-- Architecture Flow Diagram -->
+          <div class="flow-diagram-container">
+            <div class="flow-step-box">Browser</div>
+            <span class="flow-arrow">➔ :8000</span>
+            <div class="flow-step-box active-box">App Orchestrator</div>
+            <span class="flow-arrow">➔ :8001 /retrieve</span>
+            <div class="flow-step-box">Retrieval Svc</div>
+            <span class="flow-arrow">➔ :8002 /generate</span>
+            <div class="flow-step-box">LLM Svc</div>
+          </div>
+
+          <form id="orchestrate-form" style="margin-top: 1.5rem;">
+            <div class="form-group">
+              <label for="orch-question-input" class="form-label">Ask Orchestrated Question</label>
+              <textarea
+                id="orch-question-input"
+                rows="3"
+                placeholder="e.g. What is the minimum attendance requirement and what happens if I am debarred?"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-options-row">
+              <div class="select-group">
+                <label for="orch-top-k">Top-K Context Chunks:</label>
+                <select id="orch-top-k" class="custom-select">
+                  <option value="2">2 Chunks</option>
+                  <option value="3" selected>3 Chunks</option>
+                  <option value="4">4 Chunks</option>
+                </select>
+              </div>
+
+              <button type="button" id="btn-orchestrate-run" class="btn-dark">
+                ⚡ Execute Orchestrated Pipeline
+              </button>
+            </div>
+          </form>
+
+          <!-- Orchestration Loading State -->
+          <div id="orch-loading-state" class="state-box hidden" role="status" aria-live="polite">
+            <div class="spinner"></div>
+            <p id="orch-loading-text">Orchestrating request across microservices (:8000 ➔ :8001 ➔ :8002)...</p>
+          </div>
+
+          <!-- Orchestration Error Banner -->
+          <div id="orch-error-state" class="state-box error-box hidden" role="alert">
+            <span class="error-icon">⚠️</span>
+            <div class="error-content">
+              <strong>Orchestration Error:</strong>
+              <span id="orch-error-message"></span>
+            </div>
+          </div>
+
+          <!-- Orchestration Output View -->
+          <div id="orch-output-container" class="hidden">
+            <!-- Final Answer -->
+            <section class="response-section card-green">
+              <div class="response-header">
+                <h3>Orchestrated Grounded Answer</h3>
+                <button type="button" id="orch-copy-btn" class="btn-copy">Copy Response</button>
+              </div>
+              <div id="orch-answer-text" class="response-text"></div>
+            </section>
+
+            <!-- Orchestration Trace Timeline -->
+            <section class="orchestration-trace-section">
+              <div class="trace-header-row">
+                <h3>Orchestration Trace Timeline</h3>
+                <span class="total-time-badge" id="orch-total-time">Total: 0.0 ms</span>
+              </div>
+              <p class="context-subtext">Monotonic timing trace recorded by the Application Service:</p>
+              <div class="timeline-container" id="orch-timeline-list"></div>
+            </section>
+
+            <!-- Retrieved Chunks -->
+            <section class="retrieved-context-section">
+              <div class="context-header">
+                <h3>Chunks Retrieved from Retrieval Service (:8001)</h3>
+              </div>
+              <div id="orch-chunks-list" class="retrieved-chunks-grid"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           TAB 4: KNOWLEDGE BASE INSPECTOR (EXERCISE 2)
+           =================================================== -->
+      <section id="view-kb" class="tab-view hidden">
+        <div class="kb-inspector-layout">
           
-          <div class="form-actions">
-            <span class="hint">Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit</span>
-            <button type="submit" id="ask-btn">Ask Assistant</button>
+          <!-- Document Selector & Preview -->
+          <div class="kb-panel card-white">
+            <div class="panel-header">
+              <div>
+                <h3 class="panel-title">Original University Documents</h3>
+                <p class="panel-subtitle">Select a policy document to view raw text content</p>
+              </div>
+            </div>
+            <div class="selector-container">
+              <select id="doc-selector" class="custom-select full-width-select" aria-label="Select document to inspect"></select>
+            </div>
+            <div class="doc-meta-info" id="doc-meta-info"></div>
+            <pre class="doc-preview-box" id="doc-preview-content">Select a document to view content...</pre>
           </div>
-        </form>
 
-        <!-- Loading State -->
-        <div id="loading-state" class="state-box hidden" role="status" aria-live="polite">
-          <div class="spinner"></div>
-          <p>Generating answer with Code Llama...</p>
+          <!-- Generated Chunks & Vector Inspection -->
+          <div class="kb-panel card-white">
+            <div class="panel-header">
+              <div>
+                <h3 class="panel-title">Generated Chunks & Embeddings</h3>
+                <p class="panel-subtitle">Inspect semantic text chunks and float vector arrays</p>
+              </div>
+              <span class="chunk-count-badge" id="visible-chunk-count">0 Chunks</span>
+            </div>
+            <div id="chunks-list" class="chunks-container">
+              <p class="empty-notice">Load or select a document to inspect its semantic chunks.</p>
+            </div>
+          </div>
+
         </div>
+      </section>
 
-        <!-- Error Banner -->
-        <div id="error-state" class="state-box error-box hidden" role="alert">
-          <span class="error-icon">⚠️</span>
-          <div class="error-content">
-            <strong>Error:</strong>
-            <span id="error-message"></span>
+      <!-- ===================================================
+           TAB 5: WEEK 4 MODEL EVALUATION & REPO ANALYSIS
+           =================================================== -->
+      <section id="view-week4" class="tab-view hidden">
+        <div class="content-card card-white">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">Week 4 Model Evaluation & Benchmark Analysis</h2>
+              <p class="card-subtitle">Empirical performance comparison across Code Llama 7B, Phi-3 Mini, and Qwen 2.5 3B</p>
+            </div>
+            <span class="pill-badge pill-purple">Week 4 Results</span>
           </div>
+
+          <!-- Week 4 Summary Metric Bar -->
+          <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+            <div class="metric-card card-yellow">
+              <div class="metric-icon">📝</div>
+              <div class="metric-body">
+                <span class="metric-label">Evaluation Questions</span>
+                <span class="metric-value" id="stat-week4-questions">20</span>
+              </div>
+            </div>
+
+            <div class="metric-card card-pink">
+              <div class="metric-icon">🤖</div>
+              <div class="metric-body">
+                <span class="metric-label">Models Evaluated</span>
+                <span class="metric-value" id="stat-week4-models">3</span>
+              </div>
+            </div>
+
+            <div class="metric-card card-green">
+              <div class="metric-icon">🎯</div>
+              <div class="metric-body">
+                <span class="metric-label">Retrieval Quality</span>
+                <span class="metric-value" id="stat-week4-retrieval">73.68%</span>
+              </div>
+            </div>
+
+            <div class="metric-card card-blue">
+              <div class="metric-icon">💻</div>
+              <div class="metric-body">
+                <span class="metric-label">GPU Overhead</span>
+                <span class="metric-value font-mono">0 GB</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 Model Performance Cards -->
+          <div class="week4-model-grid" id="week4-model-cards">
+            <!-- Model cards dynamically populated by app.js -->
+          </div>
+
+          <!-- Multi-Model Comparison Table -->
+          <div class="week4-table-card card-white" style="margin-top: 1.75rem;">
+            <div class="panel-header">
+              <div>
+                <h3 class="panel-title">Multi-Model Comparative Evaluation Matrix</h3>
+                <p class="panel-subtitle">Detailed metrics loaded directly from week-4/results/evaluation_metrics.json</p>
+              </div>
+            </div>
+            <div class="table-responsive-container">
+              <table class="week4-table">
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th>Code Llama 7B</th>
+                    <th>Phi-3 Mini</th>
+                    <th>Qwen 2.5 3B</th>
+                  </tr>
+                </thead>
+                <tbody id="week4-table-body">
+                  <!-- Table rows populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Exercise 6 Repository Analysis Section -->
+          <div class="week4-repo-section card-lavender" style="margin-top: 1.75rem;">
+            <div class="panel-header">
+              <div>
+                <h3 class="panel-title">Exercise 6 — Repository / Codebase Understanding Evaluation</h3>
+                <p class="panel-subtitle">Assessment of existing LLM + RAG system on repository-level software questions</p>
+              </div>
+              <span class="pill-badge pill-pink">6 Questions Tested</span>
+            </div>
+
+            <div class="repo-finding-banner">
+              <span class="info-icon">💡</span>
+              <div>
+                <strong>Evaluation Finding:</strong>
+                All 6 repository-level questions failed because the retrieval corpus contains university policy documents rather than source-code files. The model produced generic answers or invented details due to missing codebase context.
+              </div>
+            </div>
+
+            <div id="week4-repo-list" class="repo-questions-grid">
+              <!-- Exercise 6 test results populated dynamically -->
+            </div>
+          </div>
+
         </div>
+      </section>
 
-        <!-- Response Area -->
-        <section id="response-container" class="response-section hidden" aria-live="polite">
-          <div class="response-header">
-            <h2>Direct LLM Response</h2>
-            <button type="button" id="copy-btn" class="secondary-btn">Copy</button>
-          </div>
-          <div id="response-output" class="response-text"></div>
-        </section>
-      </div>
+      <footer class="app-footer">
+        <p>University Knowledge Assistant &bull; Exercises 1–6 &bull; FastAPI Microservices &bull; Ollama Evaluation</p>
+      </footer>
     </main>
 
-    <!-- ===================================================
-         TAB 2: RAG & COMPARISON (EXERCISE 3)
-         =================================================== -->
-    <section id="view-rag" class="tab-view hidden">
-      <div class="app-card">
-        <div class="rag-info-banner">
-          <span class="info-icon">ℹ️</span>
-          <div>
-            <strong>Retrieval-Augmented Generation (RAG):</strong>
-            Questions are converted to query vectors, matched against the university policy knowledge base via cosine similarity, and provided as grounded evidence to Code Llama.
-          </div>
-        </div>
-
-        <form id="rag-form">
-          <label for="rag-question-input" class="form-label">Ask About University Policies</label>
-          <textarea
-            id="rag-question-input"
-            name="rag-question"
-            rows="3"
-            placeholder="e.g. What is the minimum attendance required and can it be condoned on medical grounds?"
-            required
-          ></textarea>
-
-          <div class="rag-options-row">
-            <div class="top-k-selector">
-              <label for="rag-top-k">Retrieve Top-K Chunks:</label>
-              <select id="rag-top-k">
-                <option value="2">2 Chunks</option>
-                <option value="3" selected>3 Chunks</option>
-                <option value="5">5 Chunks</option>
-              </select>
-            </div>
-            <div class="rag-btn-group">
-              <button type="button" id="btn-rag-ask" class="primary-btn">
-                🔍 Ask with RAG
-              </button>
-              <button type="button" id="btn-rag-compare" class="compare-btn">
-                ⚖️ Compare Direct vs RAG
-              </button>
-            </div>
-          </div>
-        </form>
-
-        <!-- RAG Loading State -->
-        <div id="rag-loading-state" class="state-box hidden" role="status" aria-live="polite">
-          <div class="spinner"></div>
-          <p id="rag-loading-text">Performing vector similarity search & running Code Llama...</p>
-        </div>
-
-        <!-- RAG Error Banner -->
-        <div id="rag-error-state" class="state-box error-box hidden" role="alert">
-          <span class="error-icon">⚠️</span>
-          <div class="error-content">
-            <strong>Error:</strong>
-            <span id="rag-error-message"></span>
-          </div>
-        </div>
-
-        <!-- RAG Single Response Output -->
-        <div id="rag-single-output-container" class="hidden">
-          <section class="response-section">
-            <div class="response-header">
-              <h2>Grounded Assistant Response</h2>
-              <button type="button" id="rag-copy-btn" class="secondary-btn">Copy</button>
-            </div>
-            <div id="rag-single-answer" class="response-text"></div>
-          </section>
-        </div>
-
-        <!-- Comparison Side-by-Side Output -->
-        <div id="rag-compare-output-container" class="hidden">
-          <div class="compare-grid">
-            <div class="compare-column">
-              <div class="compare-col-header direct-header">
-                <h3>Direct LLM (Without Retrieval)</h3>
-                <span class="pill-badge">Exercise 1 Flow</span>
-              </div>
-              <p class="compare-hint">Raw model completion without policy knowledge base.</p>
-              <div id="compare-direct-answer" class="response-text compare-text"></div>
-            </div>
-
-            <div class="compare-column">
-              <div class="compare-col-header rag-header">
-                <h3>RAG Augmented (With Context)</h3>
-                <span class="pill-badge green-badge">Exercise 3 Flow</span>
-              </div>
-              <p class="compare-hint">Grounded response conditioned on retrieved policy chunks.</p>
-              <div id="compare-rag-answer" class="response-text compare-text"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Retrieved Context Chunks Display (Shows for both RAG and Compare) -->
-        <section id="retrieved-context-container" class="retrieved-context-section hidden">
-          <div class="context-header">
-            <h3>Retrieved Context Evidence (Cosine Similarity Ranking)</h3>
-            <span class="similarity-info-tag">Pure Python Cosine Similarity</span>
-          </div>
-          <p class="context-subtext">These policy chunks were retrieved from the knowledge base and injected into the prompt:</p>
-          <div id="retrieved-chunks-list" class="retrieved-chunks-grid"></div>
-        </section>
-      </div>
-    </section>
-
-    <!-- ===================================================
-         TAB 3: ORCHESTRATED FLOW (EXERCISE 4)
-         =================================================== -->
-    <section id="view-orchestrate" class="tab-view hidden">
-      <!-- 3 Service Cards -->
-      <div class="services-topology-grid">
-        <div class="service-card" id="card-app-service">
-          <div class="service-card-header">
-            <span class="service-port">:8000</span>
-            <span class="service-status-dot active"></span>
-          </div>
-          <div class="service-card-title">Application Service</div>
-          <p class="service-card-desc">Gateway, Web UI & Orchestrator</p>
-          <span class="service-endpoint-tag">POST /api/orchestrate</span>
-        </div>
-
-        <div class="service-arrow">➔</div>
-
-        <div class="service-card" id="card-retrieval-service">
-          <div class="service-card-header">
-            <span class="service-port">:8001</span>
-            <span class="service-status-dot active"></span>
-          </div>
-          <div class="service-card-title">Retrieval Service</div>
-          <p class="service-card-desc">Embeddings & Cosine Search</p>
-          <span class="service-endpoint-tag">POST /retrieve</span>
-        </div>
-
-        <div class="service-arrow">➔</div>
-
-        <div class="service-card" id="card-llm-service">
-          <div class="service-card-header">
-            <span class="service-port">:8002</span>
-            <span class="service-status-dot active"></span>
-          </div>
-          <div class="service-card-title">LLM Service</div>
-          <p class="service-card-desc">Ollama Code Llama Interface</p>
-          <span class="service-endpoint-tag">POST /generate</span>
-        </div>
-      </div>
-
-      <div class="app-card" style="margin-top: 1rem;">
-        <!-- Architecture Workflow Diagram -->
-        <div class="flow-diagram-container">
-          <div class="flow-step-box">Browser</div>
-          <span class="flow-arrow">➔ :8000</span>
-          <div class="flow-step-box active-box">App Orchestrator</div>
-          <span class="flow-arrow">➔ :8001 /retrieve</span>
-          <div class="flow-step-box">Retrieval Svc</div>
-          <span class="flow-arrow">➔ :8002 /generate</span>
-          <div class="flow-step-box">LLM Svc</div>
-        </div>
-
-        <form id="orchestrate-form" style="margin-top: 1.25rem;">
-          <label for="orch-question-input" class="form-label">Ask Orchestrated Question</label>
-          <textarea
-            id="orch-question-input"
-            rows="3"
-            placeholder="e.g. What is the minimum attendance requirement and what happens if I am debarred?"
-            required
-          ></textarea>
-
-          <div class="rag-options-row">
-            <div class="top-k-selector">
-              <label for="orch-top-k">Top-K Context Chunks:</label>
-              <select id="orch-top-k">
-                <option value="2">2 Chunks</option>
-                <option value="3" selected>3 Chunks</option>
-                <option value="4">4 Chunks</option>
-              </select>
-            </div>
-            <button type="button" id="btn-orchestrate-run" class="primary-btn">
-              ⚡ Execute Orchestrated Pipeline
-            </button>
-          </div>
-        </form>
-
-        <!-- Orchestration Loading State -->
-        <div id="orch-loading-state" class="state-box hidden" role="status" aria-live="polite">
-          <div class="spinner"></div>
-          <p id="orch-loading-text">Orchestrating request across microservices (:8000 ➔ :8001 ➔ :8002)...</p>
-        </div>
-
-        <!-- Orchestration Error Banner -->
-        <div id="orch-error-state" class="state-box error-box hidden" role="alert">
-          <span class="error-icon">⚠️</span>
-          <div class="error-content">
-            <strong>Orchestration Error:</strong>
-            <span id="orch-error-message"></span>
-          </div>
-        </div>
-
-        <!-- Orchestration Output View -->
-        <div id="orch-output-container" class="hidden">
-          <!-- Final Answer -->
-          <section class="response-section">
-            <div class="response-header">
-              <h2>Orchestrated Grounded Answer</h2>
-              <button type="button" id="orch-copy-btn" class="secondary-btn">Copy</button>
-            </div>
-            <div id="orch-answer-text" class="response-text"></div>
-          </section>
-
-          <!-- Orchestration Trace Timeline -->
-          <section class="orchestration-trace-section">
-            <div class="trace-header-row">
-              <h3>Orchestration Trace (Monotonic Timings)</h3>
-              <span class="total-time-badge" id="orch-total-time">Total: 0.0 ms</span>
-            </div>
-            <p class="context-subtext">Verified HTTP communication trace recorded by the Application Service:</p>
-            <div class="timeline-container" id="orch-timeline-list"></div>
-          </section>
-
-          <!-- Retrieved Chunks -->
-          <section class="retrieved-context-section">
-            <div class="context-header">
-              <h3>Chunks Retrieved from Retrieval Service (:8001)</h3>
-            </div>
-            <div id="orch-chunks-list" class="retrieved-chunks-grid"></div>
-          </section>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===================================================
-         TAB 4: KNOWLEDGE BASE INSPECTOR (EXERCISE 2)
-         =================================================== -->
-    <section id="view-kb" class="tab-view hidden">
-      <!-- Knowledge Base Summary Bar -->
-      <div class="kb-summary-grid">
-        <div class="summary-card">
-          <span class="summary-label">Documents</span>
-          <span class="summary-value" id="stat-docs">-</span>
-        </div>
-        <div class="summary-card">
-          <span class="summary-label">Total Chunks</span>
-          <span class="summary-value" id="stat-chunks">-</span>
-        </div>
-        <div class="summary-card">
-          <span class="summary-label">Embedding Model</span>
-          <span class="summary-value font-mono" id="stat-model">-</span>
-        </div>
-        <div class="summary-card">
-          <span class="summary-label">Vector Dimension</span>
-          <span class="summary-value font-mono" id="stat-dim">-</span>
-        </div>
-      </div>
-
-      <div class="kb-actions-bar">
-        <div class="kb-status-indicator">
-          <span class="status-dot" id="kb-status-dot"></span>
-          <span id="kb-status-text">Checking status...</span>
-        </div>
-        <button type="button" id="btn-reindex" class="primary-btn-sm">
-          ⚡ Re-index Knowledge Base
-        </button>
-      </div>
-
-      <!-- Document & Chunk Inspection Layout -->
-      <div class="kb-inspector-container">
-        <!-- Document Selection & Preview -->
-        <div class="kb-panel">
-          <div class="panel-header">
-            <h3>Original University Documents</h3>
-            <select id="doc-selector" aria-label="Select document to inspect"></select>
-          </div>
-          <div class="doc-meta-info" id="doc-meta-info"></div>
-          <pre class="doc-preview-box" id="doc-preview-content">Select a document to view content...</pre>
-        </div>
-
-        <!-- Generated Chunks & Vector Representation -->
-        <div class="kb-panel">
-          <div class="panel-header">
-            <h3>Generated Chunks & Vector Vectors</h3>
-            <span class="chunk-count-badge" id="visible-chunk-count">0 Chunks</span>
-          </div>
-          <div id="chunks-list" class="chunks-container">
-            <p class="empty-notice">Load or select a document to inspect its semantic chunks.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <footer class="app-footer">
-      <p>University Knowledge Assistant &bull; Exercises 1–4 &bull; FastAPI Microservices &bull; Ollama</p>
-    </footer>
   </div>
 
   <script src="app.js"></script>

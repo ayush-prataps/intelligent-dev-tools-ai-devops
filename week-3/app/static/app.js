@@ -1,7 +1,42 @@
-// University Knowledge Assistant - Client-side logic (Exercise 1, 2, 3 & 4)
+// University Knowledge Assistant - Client-side logic (Exercises 1–6)
 document.addEventListener("DOMContentLoaded", () => {
+  
   // ==========================================
-  // Tab Navigation
+  // Sidebar Expand / Collapse & Mobile Drawer Logic
+  // ==========================================
+  const sidebar = document.getElementById("sidebar");
+  const sidebarToggleBtn = document.getElementById("sidebar-toggle-btn");
+  const sidebarCollapseBtn = document.getElementById("sidebar-collapse-btn");
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+
+  if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener("click", () => {
+      if (window.innerWidth <= 1024) {
+        sidebar.classList.toggle("mobile-open");
+        sidebarOverlay.classList.toggle("active");
+      } else {
+        sidebar.classList.toggle("expanded");
+      }
+    });
+  }
+
+  if (sidebarCollapseBtn) {
+    sidebarCollapseBtn.addEventListener("click", () => {
+      sidebar.classList.remove("expanded");
+      sidebar.classList.remove("mobile-open");
+      sidebarOverlay.classList.remove("active");
+    });
+  }
+
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener("click", () => {
+      sidebar.classList.remove("mobile-open");
+      sidebarOverlay.classList.remove("active");
+    });
+  }
+
+  // ==========================================
+  // Tab Navigation (Exercises 1, 2, 3, 4 & 5/6)
   // ==========================================
   const tabBtns = document.querySelectorAll(".tab-btn");
   const tabViews = document.querySelectorAll(".tab-view");
@@ -13,17 +48,30 @@ document.addEventListener("DOMContentLoaded", () => {
         b.classList.remove("active");
         b.setAttribute("aria-selected", "false");
       });
-      tabViews.forEach((v) => v.classList.add("hidden"));
+
+      tabViews.forEach((v) => {
+        v.classList.remove("active");
+        v.classList.add("hidden");
+      });
 
       btn.classList.add("active");
       btn.setAttribute("aria-selected", "true");
+      
       const targetView = document.getElementById(targetId);
       if (targetView) {
         targetView.classList.remove("hidden");
+        targetView.classList.add("active");
+      }
+
+      if (window.innerWidth <= 1024) {
+        sidebar.classList.remove("mobile-open");
+        sidebarOverlay.classList.remove("active");
       }
 
       if (targetId === "view-kb") {
         initKnowledgeBase();
+      } else if (targetId === "view-week4") {
+        initWeek4Evaluation();
       }
     });
   });
@@ -41,59 +89,65 @@ document.addEventListener("DOMContentLoaded", () => {
   const responseOutput = document.getElementById("response-output");
   const copyBtn = document.getElementById("copy-btn");
 
-  questionInput.addEventListener("keydown", (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-      event.preventDefault();
-      form.requestSubmit();
-    }
-  });
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const question = questionInput.value.trim();
-    if (!question) return;
-
-    hideError();
-    responseContainer.classList.add("hidden");
-    setLoading(true);
-
-    try {
-      const response = await fetch("/api/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        const detail = data.detail || `Server error (${response.status})`;
-        showError(detail);
-        return;
+  if (questionInput) {
+    questionInput.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        form.requestSubmit();
       }
+    });
+  }
 
-      responseOutput.textContent = data.answer || "No response generated.";
-      responseContainer.classList.remove("hidden");
-    } catch (err) {
-      showError(`Network error: Unable to reach FastAPI backend. (${err.message})`);
-    } finally {
-      setLoading(false);
-    }
-  });
+  if (form) {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
 
-  copyBtn.addEventListener("click", async () => {
-    const text = responseOutput.textContent;
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      const originalText = copyBtn.textContent;
-      copyBtn.textContent = "Copied!";
-      setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
-  });
+      const question = questionInput.value.trim();
+      if (!question) return;
+
+      hideError();
+      responseContainer.classList.add("hidden");
+      setLoading(true);
+
+      try {
+        const response = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const detail = data.detail || `Server error (${response.status})`;
+          showError(detail);
+          return;
+        }
+
+        responseOutput.textContent = data.answer || "No response generated.";
+        responseContainer.classList.remove("hidden");
+      } catch (err) {
+        showError(`Network error: Unable to reach FastAPI backend. (${err.message})`);
+      } finally {
+        setLoading(false);
+      }
+    });
+  }
+
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async () => {
+      const text = responseOutput.textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+      } catch (err) {
+        console.error("Failed to copy text: ", err);
+      }
+    });
+  }
 
   function setLoading(isLoading) {
     if (isLoading) {
@@ -140,89 +194,95 @@ document.addEventListener("DOMContentLoaded", () => {
   const retrievedContextContainer = document.getElementById("retrieved-context-container");
   const retrievedChunksList = document.getElementById("retrieved-chunks-list");
 
-  btnRagAsk.addEventListener("click", async () => {
-    const question = ragQuestionInput.value.trim();
-    if (!question) {
-      showRagError("Please enter a question.");
-      return;
-    }
-
-    const topK = parseInt(ragTopK.value, 10) || 3;
-    hideRagError();
-    hideAllRagResults();
-    setRagLoading(true, "Searching vector embeddings & generating grounded answer with Code Llama...");
-
-    try {
-      const res = await fetch("/api/rag", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, top_k: topK })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || `Server error (${res.status})`);
+  if (btnRagAsk) {
+    btnRagAsk.addEventListener("click", async () => {
+      const question = ragQuestionInput.value.trim();
+      if (!question) {
+        showRagError("Please enter a question.");
+        return;
       }
 
-      ragSingleAnswer.textContent = data.answer || "No answer generated.";
-      ragSingleOutputContainer.classList.remove("hidden");
+      const topK = parseInt(ragTopK.value, 10) || 3;
+      hideRagError();
+      hideAllRagResults();
+      setRagLoading(true, "Searching vector embeddings & generating grounded answer with Code Llama...");
 
-      renderRetrievedChunks(data.retrieved_chunks || [], retrievedChunksList, retrievedContextContainer);
-    } catch (err) {
-      showRagError(err.message);
-    } finally {
-      setRagLoading(false);
-    }
-  });
+      try {
+        const res = await fetch("/api/rag", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, top_k: topK })
+        });
 
-  btnRagCompare.addEventListener("click", async () => {
-    const question = ragQuestionInput.value.trim();
-    if (!question) {
-      showRagError("Please enter a question to compare.");
-      return;
-    }
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || `Server error (${res.status})`);
+        }
 
-    const topK = parseInt(ragTopK.value, 10) || 3;
-    hideRagError();
-    hideAllRagResults();
-    setRagLoading(true, "Running Direct LLM and RAG pipelines in parallel for comparison...");
+        ragSingleAnswer.textContent = data.answer || "No answer generated.";
+        ragSingleOutputContainer.classList.remove("hidden");
 
-    try {
-      const res = await fetch("/api/compare", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, top_k: topK })
-      });
+        renderRetrievedChunks(data.retrieved_chunks || [], retrievedChunksList, retrievedContextContainer);
+      } catch (err) {
+        showRagError(err.message);
+      } finally {
+        setRagLoading(false);
+      }
+    });
+  }
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || `Server error (${res.status})`);
+  if (btnRagCompare) {
+    btnRagCompare.addEventListener("click", async () => {
+      const question = ragQuestionInput.value.trim();
+      if (!question) {
+        showRagError("Please enter a question to compare.");
+        return;
       }
 
-      compareDirectAnswer.textContent = data.direct_answer || "No direct answer generated.";
-      compareRagAnswer.textContent = data.rag_answer || "No RAG answer generated.";
-      ragCompareOutputContainer.classList.remove("hidden");
+      const topK = parseInt(ragTopK.value, 10) || 3;
+      hideRagError();
+      hideAllRagResults();
+      setRagLoading(true, "Running Direct LLM and RAG pipelines in parallel for comparison...");
 
-      renderRetrievedChunks(data.retrieved_chunks || [], retrievedChunksList, retrievedContextContainer);
-    } catch (err) {
-      showRagError(err.message);
-    } finally {
-      setRagLoading(false);
-    }
-  });
+      try {
+        const res = await fetch("/api/compare", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, top_k: topK })
+        });
 
-  ragCopyBtn.addEventListener("click", async () => {
-    const text = ragSingleAnswer.textContent;
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      const originalText = ragCopyBtn.textContent;
-      ragCopyBtn.textContent = "Copied!";
-      setTimeout(() => { ragCopyBtn.textContent = originalText; }, 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
-  });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || `Server error (${res.status})`);
+        }
+
+        compareDirectAnswer.textContent = data.direct_answer || "No direct answer generated.";
+        compareRagAnswer.textContent = data.rag_answer || "No RAG answer generated.";
+        ragCompareOutputContainer.classList.remove("hidden");
+
+        renderRetrievedChunks(data.retrieved_chunks || [], retrievedChunksList, retrievedContextContainer);
+      } catch (err) {
+        showRagError(err.message);
+      } finally {
+        setRagLoading(false);
+      }
+    });
+  }
+
+  if (ragCopyBtn) {
+    ragCopyBtn.addEventListener("click", async () => {
+      const text = ragSingleAnswer.textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = ragCopyBtn.textContent;
+        ragCopyBtn.textContent = "Copied!";
+        setTimeout(() => { ragCopyBtn.textContent = originalText; }, 2000);
+      } catch (err) {
+        console.error("Failed to copy text: ", err);
+      }
+    });
+  }
 
   function renderRetrievedChunks(chunks, targetList, targetContainer) {
     targetList.innerHTML = "";
@@ -297,49 +357,45 @@ document.addEventListener("DOMContentLoaded", () => {
   const orchTimelineList = document.getElementById("orch-timeline-list");
   const orchChunksList = document.getElementById("orch-chunks-list");
 
-  btnOrchestrateRun.addEventListener("click", async () => {
-    const question = orchQuestionInput.value.trim();
-    if (!question) {
-      showOrchError("Please enter a question to orchestrate.");
-      return;
-    }
-
-    const topK = parseInt(orchTopK.value, 10) || 3;
-    hideOrchError();
-    orchOutputContainer.classList.add("hidden");
-    setOrchLoading(true, "Orchestrating request across microservices (:8000 ➔ :8001 ➔ :8002)...");
-
-    try {
-      const res = await fetch("/api/orchestrate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, top_k: topK })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.detail || `Server error (${res.status})`);
+  if (btnOrchestrateRun) {
+    btnOrchestrateRun.addEventListener("click", async () => {
+      const question = orchQuestionInput.value.trim();
+      if (!question) {
+        showOrchError("Please enter a question to orchestrate.");
+        return;
       }
 
-      // 1. Render Grounded Answer
-      orchAnswerText.textContent = data.answer || "No answer generated.";
+      const topK = parseInt(orchTopK.value, 10) || 3;
+      hideOrchError();
+      orchOutputContainer.classList.add("hidden");
+      setOrchLoading(true, "Orchestrating request across microservices (:8000 ➔ :8001 ➔ :8002)...");
 
-      // 2. Render Total Time Badge
-      orchTotalTime.textContent = `Total Latency: ${data.total_elapsed_ms.toFixed(1)} ms`;
+      try {
+        const res = await fetch("/api/orchestrate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, top_k: topK })
+        });
 
-      // 3. Render Orchestration Trace Timeline
-      renderTimeline(data.orchestration_trace || []);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || `Server error (${res.status})`);
+        }
 
-      // 4. Render Retrieved Chunks
-      renderRetrievedChunks(data.retrieved_chunks || [], orchChunksList, orchChunksList.parentElement);
+        orchAnswerText.textContent = data.answer || "No answer generated.";
+        orchTotalTime.textContent = `Total Latency: ${data.total_elapsed_ms.toFixed(1)} ms`;
 
-      orchOutputContainer.classList.remove("hidden");
-    } catch (err) {
-      showOrchError(err.message);
-    } finally {
-      setOrchLoading(false);
-    }
-  });
+        renderTimeline(data.orchestration_trace || []);
+        renderRetrievedChunks(data.retrieved_chunks || [], orchChunksList, orchChunksList.parentElement);
+
+        orchOutputContainer.classList.remove("hidden");
+      } catch (err) {
+        showOrchError(err.message);
+      } finally {
+        setOrchLoading(false);
+      }
+    });
+  }
 
   function renderTimeline(trace) {
     orchTimelineList.innerHTML = "";
@@ -358,18 +414,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  orchCopyBtn.addEventListener("click", async () => {
-    const text = orchAnswerText.textContent;
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      const originalText = orchCopyBtn.textContent;
-      orchCopyBtn.textContent = "Copied!";
-      setTimeout(() => { orchCopyBtn.textContent = originalText; }, 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
-  });
+  if (orchCopyBtn) {
+    orchCopyBtn.addEventListener("click", async () => {
+      const text = orchAnswerText.textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = orchCopyBtn.textContent;
+        orchCopyBtn.textContent = "Copied!";
+        setTimeout(() => { orchCopyBtn.textContent = originalText; }, 2000);
+      } catch (err) {
+        console.error("Failed to copy text: ", err);
+      }
+    });
+  }
 
   function setOrchLoading(isLoading, message = "") {
     if (isLoading) {
@@ -421,21 +479,21 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!res.ok) throw new Error("Failed to load summary");
       const data = await res.json();
 
-      statDocs.textContent = data.total_documents ?? 0;
-      statChunks.textContent = data.total_chunks ?? 0;
-      statModel.textContent = data.embedding_model || "-";
-      statDim.textContent = data.embedding_dimension ? `${data.embedding_dimension}D` : "Not Indexed";
+      if (statDocs) statDocs.textContent = data.total_documents ?? 0;
+      if (statChunks) statChunks.textContent = data.total_chunks ?? 0;
+      if (statModel) statModel.textContent = data.embedding_model || "-";
+      if (statDim) statDim.textContent = data.embedding_dimension ? `${data.embedding_dimension}D` : "Not Indexed";
 
       if (data.status === "ready") {
-        kbStatusDot.className = "status-dot ready";
-        kbStatusText.textContent = "Knowledge base ready";
+        if (kbStatusDot) kbStatusDot.className = "status-dot ready";
+        if (kbStatusText) kbStatusText.textContent = "Knowledge base ready";
       } else {
-        kbStatusDot.className = "status-dot warning";
-        kbStatusText.textContent = data.message || "Not indexed";
+        if (kbStatusDot) kbStatusDot.className = "status-dot warning";
+        if (kbStatusText) kbStatusText.textContent = data.message || "Not indexed";
       }
     } catch (err) {
-      kbStatusDot.className = "status-dot warning";
-      kbStatusText.textContent = "Could not fetch status";
+      if (kbStatusDot) kbStatusDot.className = "status-dot warning";
+      if (kbStatusText) kbStatusText.textContent = "Could not fetch status";
     }
   }
 
@@ -445,6 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!res.ok) throw new Error("Failed to load documents");
       documentsCache = await res.json();
 
+      if (!docSelector) return;
       docSelector.innerHTML = "";
       if (documentsCache.length === 0) {
         docSelector.innerHTML = '<option value="">No documents found</option>';
@@ -463,7 +522,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchChunks(documentsCache[0].id);
       }
     } catch (err) {
-      docPreviewContent.textContent = `Error loading documents: ${err.message}`;
+      if (docPreviewContent) docPreviewContent.textContent = `Error loading documents: ${err.message}`;
     }
   }
 
@@ -471,17 +530,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const doc = documentsCache.find((d) => d.id === docId);
     if (!doc) return;
 
-    docMetaInfo.textContent = `File: ${doc.filename} | Length: ${doc.char_count} chars | Lines: ${doc.line_count}`;
-    docPreviewContent.textContent = doc.content;
+    if (docMetaInfo) docMetaInfo.textContent = `File: ${doc.filename} | Length: ${doc.char_count} chars | Lines: ${doc.line_count}`;
+    if (docPreviewContent) docPreviewContent.textContent = doc.content;
   }
 
-  docSelector.addEventListener("change", (e) => {
-    const selectedDocId = e.target.value;
-    displayDocument(selectedDocId);
-    fetchChunks(selectedDocId);
-  });
+  if (docSelector) {
+    docSelector.addEventListener("change", (e) => {
+      const selectedDocId = e.target.value;
+      displayDocument(selectedDocId);
+      fetchChunks(selectedDocId);
+    });
+  }
 
   async function fetchChunks(docId = null) {
+    if (!chunksList) return;
     chunksList.innerHTML = '<p class="empty-notice">Loading chunks...</p>';
     try {
       const url = docId ? `/api/knowledge/chunks?doc_id=${encodeURIComponent(docId)}` : "/api/knowledge/chunks";
@@ -490,12 +552,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (data.status !== "ready" || !data.chunks || data.chunks.length === 0) {
-        visibleChunkCount.textContent = "0 Chunks";
+        if (visibleChunkCount) visibleChunkCount.textContent = "0 Chunks";
         chunksList.innerHTML = '<p class="empty-notice">No chunks indexed yet. Click "Re-index Knowledge Base" above.</p>';
         return;
       }
 
-      visibleChunkCount.textContent = `${data.chunks.length} Chunk${data.chunks.length === 1 ? "" : "s"}`;
+      if (visibleChunkCount) visibleChunkCount.textContent = `${data.chunks.length} Chunk${data.chunks.length === 1 ? "" : "s"}`;
       renderChunks(data.chunks);
     } catch (err) {
       chunksList.innerHTML = `<p class="empty-notice">Error loading chunks: ${err.message}</p>`;
@@ -503,12 +565,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderChunks(chunks) {
+    if (!chunksList) return;
     chunksList.innerHTML = "";
     chunks.forEach((c) => {
       const card = document.createElement("div");
       card.className = "chunk-card";
 
-      const sampleStr = c.vector_sample.map((n) => n.toFixed(4)).join(", ");
+      const sampleStr = c.vector_sample ? c.vector_sample.map((n) => n.toFixed(4)).join(", ") : "";
       const fullVectorPreview = c.full_vector ? JSON.stringify(c.full_vector.slice(0, 50)) + "..." : "";
 
       card.innerHTML = `
@@ -519,11 +582,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="chunk-body">${escapeHtml(c.text)}</div>
         <div class="chunk-vector-box">
           <div class="vector-summary">
-            <span>Vector [${c.vector_dimension} dimensions]: [${sampleStr}, ...]</span>
-            <span class="vector-toggle-hint">Click to inspect</span>
+            <span>Vector [${c.vector_dimension}D]: [${sampleStr}, ...]</span>
+            <span class="vector-toggle-hint">Inspect vector</span>
           </div>
           <div class="vector-full hidden">
-            <strong>Sample Float Array (First 50 floats):</strong><br>
+            <strong>First 50 floats:</strong><br>
             ${escapeHtml(fullVectorPreview)}
           </div>
         </div>
@@ -531,44 +594,193 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const vectorSummary = card.querySelector(".vector-summary");
       const vectorFull = card.querySelector(".vector-full");
-      vectorSummary.addEventListener("click", () => {
-        vectorFull.classList.toggle("hidden");
-      });
+      if (vectorSummary && vectorFull) {
+        vectorSummary.addEventListener("click", () => {
+          vectorFull.classList.toggle("hidden");
+        });
+      }
 
       chunksList.appendChild(card);
     });
   }
 
-  btnReindex.addEventListener("click", async () => {
-    btnReindex.disabled = true;
-    btnReindex.textContent = "⏳ Processing Chunks & Embeddings...";
-    kbStatusText.textContent = "Generating embeddings via Ollama...";
+  if (btnReindex) {
+    btnReindex.addEventListener("click", async () => {
+      btnReindex.disabled = true;
+      btnReindex.textContent = "⏳ Processing...";
+      if (kbStatusText) kbStatusText.textContent = "Generating embeddings...";
 
-    try {
-      const res = await fetch("/api/knowledge/index", { method: "POST" });
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.detail || "Indexing failed");
+      try {
+        const res = await fetch("/api/knowledge/index", { method: "POST" });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.detail || "Indexing failed");
+
+        await fetchKbSummary();
+        await fetchDocuments();
+        alert(`Knowledge base indexed successfully!\nGenerated ${result.summary.total_chunks} chunks with ${result.summary.embedding_dimension}D embeddings.`);
+      } catch (err) {
+        alert(`Indexing failed: ${err.message}`);
+      } finally {
+        btnReindex.disabled = false;
+        btnReindex.textContent = "⚡ Re-index KB";
       }
+    });
+  }
 
-      await fetchKbSummary();
-      await fetchDocuments();
-      alert(`Knowledge base indexed successfully!\nGenerated ${result.summary.total_chunks} chunks with ${result.summary.embedding_dimension}D embeddings.`);
+  // ===================================================
+  // Week 4 Evaluation Logic (Loaded from /api/week4/*)
+  // ===================================================
+  const week4ModelCardsContainer = document.getElementById("week4-model-cards");
+  const week4TableBody = document.getElementById("week4-table-body");
+  const week4RepoList = document.getElementById("week4-repo-list");
+
+  let week4MetricsCache = null;
+  let week4RepoAnalysisCache = null;
+
+  async function initWeek4Evaluation() {
+    await fetchWeek4Metrics();
+    await fetchWeek4RepoAnalysis();
+  }
+
+  async function fetchWeek4Metrics() {
+    try {
+      const res = await fetch("/api/week4/metrics");
+      if (!res.ok) throw new Error("Failed to load Week 4 metrics");
+      week4MetricsCache = await res.json();
+
+      renderWeek4ModelCards(week4MetricsCache.models || []);
+      renderWeek4ComparisonTable(week4MetricsCache.models || []);
     } catch (err) {
-      alert(`Indexing failed: ${err.message}`);
-    } finally {
-      btnReindex.disabled = false;
-      btnReindex.textContent = "⚡ Re-index Knowledge Base";
+      console.error("Week 4 metrics error: ", err);
     }
-  });
+  }
+
+  async function fetchWeek4RepoAnalysis() {
+    try {
+      const res = await fetch("/api/week4/repository-analysis");
+      if (!res.ok) throw new Error("Failed to load repository analysis");
+      week4RepoAnalysisCache = await res.json();
+
+      renderWeek4RepoAnalysis(week4RepoAnalysisCache.results || []);
+    } catch (err) {
+      console.error("Week 4 repo analysis error: ", err);
+    }
+  }
+
+  function renderWeek4ModelCards(models) {
+    if (!week4ModelCardsContainer) return;
+    week4ModelCardsContainer.innerHTML = "";
+
+    const cardClasses = ["card-pink", "card-green", "card-blue"];
+
+    models.forEach((m, idx) => {
+      const card = document.createElement("div");
+      card.className = `week4-model-card ${cardClasses[idx % cardClasses.length]}`;
+
+      const modelName = m.model.split(":")[0].replace("-", " ").toUpperCase();
+      const correctness = m.quality?.correctness?.percentage ?? "-";
+      const relevance = m.quality?.relevance?.percentage ?? "-";
+      const retrieval = m.quality?.retrieval_quality?.percentage ?? "-";
+      const hallucination = m.quality?.hallucination_rate?.percentage ?? "-";
+      const avgLatencySec = m.performance?.latency_ms?.average ? (m.performance.latency_ms.average / 1000).toFixed(2) + "s" : "-";
+
+      card.innerHTML = `
+        <div class="model-card-header">
+          <div>
+            <div class="model-name">${escapeHtml(modelName)}</div>
+            <div class="model-tag">${escapeHtml(m.model)}</div>
+          </div>
+          <span class="pill-badge pill-purple">${m.questions} Questions</span>
+        </div>
+        <div class="model-metric-list">
+          <div class="model-metric-item">
+            <span class="metric-name">Correctness Score</span>
+            <span class="metric-val">${correctness}%</span>
+          </div>
+          <div class="model-metric-item">
+            <span class="metric-name">Relevance Score</span>
+            <span class="metric-val">${relevance}%</span>
+          </div>
+          <div class="model-metric-item">
+            <span class="metric-name">Retrieval Quality</span>
+            <span class="metric-val">${retrieval}%</span>
+          </div>
+          <div class="model-metric-item">
+            <span class="metric-name">Hallucination Rate</span>
+            <span class="metric-val">${hallucination}%</span>
+          </div>
+          <div class="model-metric-item">
+            <span class="metric-name">Average Latency</span>
+            <span class="metric-val font-mono">${avgLatencySec}</span>
+          </div>
+        </div>
+      `;
+      week4ModelCardsContainer.appendChild(card);
+    });
+  }
+
+  function renderWeek4ComparisonTable(models) {
+    if (!week4TableBody || models.length < 3) return;
+
+    const m1 = models[0];
+    const m2 = models[1];
+    const m3 = models[2];
+
+    const rows = [
+      { label: "Correctness Score (%)", v1: `${m1.quality?.correctness?.percentage}%`, v2: `${m2.quality?.correctness?.percentage}%`, v3: `${m3.quality?.correctness?.percentage}%` },
+      { label: "Relevance Score (%)", v1: `${m1.quality?.relevance?.percentage}%`, v2: `${m2.quality?.relevance?.percentage}%`, v3: `${m3.quality?.relevance?.percentage}%` },
+      { label: "Retrieval Quality (%)", v1: `${m1.quality?.retrieval_quality?.percentage}%`, v2: `${m2.quality?.retrieval_quality?.percentage}%`, v3: `${m3.quality?.retrieval_quality?.percentage}%` },
+      { label: "Hallucination Rate (%)", v1: `${m1.quality?.hallucination_rate?.percentage}%`, v2: `${m2.quality?.hallucination_rate?.percentage}%`, v3: `${m3.quality?.hallucination_rate?.percentage}%` },
+      { label: "Average Latency (ms)", v1: `${m1.performance?.latency_ms?.average} ms`, v2: `${m2.performance?.latency_ms?.average} ms`, v3: `${m3.performance?.latency_ms?.average} ms` },
+      { label: "Median Latency (ms)", v1: `${m1.performance?.latency_ms?.median} ms`, v2: `${m2.performance?.latency_ms?.median} ms`, v3: `${m3.performance?.latency_ms?.median} ms` },
+      { label: "Average Total Tokens", v1: m1.performance?.tokens?.average_total, v2: m2.performance?.tokens?.average_total, v3: m3.performance?.tokens?.average_total }
+    ];
+
+    week4TableBody.innerHTML = "";
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <strong>${escapeHtml(r.label)}</strong>
+        <td>${escapeHtml(String(r.v1))}</td>
+        <td>${escapeHtml(String(r.v2))}</td>
+        <td>${escapeHtml(String(r.v3))}</td>
+      `;
+      week4TableBody.appendChild(tr);
+    });
+  }
+
+  function renderWeek4RepoAnalysis(results) {
+    if (!week4RepoList) return;
+    week4RepoList.innerHTML = "";
+
+    results.forEach((q) => {
+      const card = document.createElement("div");
+      card.className = "repo-question-card";
+
+      card.innerHTML = `
+        <div class="repo-q-header">
+          <span class="repo-q-id">${escapeHtml(q.id)}</span>
+          <span class="status-badge-fail">${escapeHtml(q.result)}</span>
+        </div>
+        <div class="repo-q-text">${escapeHtml(q.question)}</div>
+        <div class="repo-q-finding">
+          <strong>Finding:</strong> ${escapeHtml(q.finding)}
+        </div>
+      `;
+      week4RepoList.appendChild(card);
+    });
+  }
 
   function escapeHtml(str) {
     if (!str) return "";
-    return str
+    return String(str)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
   }
+
+  // Initial load: Fetch KB summary for top dashboard cards immediately
+  fetchKbSummary();
 });
