@@ -925,6 +925,356 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ===================================================
+  // Guardrails Live Comparison Logic
+  // ===================================================
+  const guardrailsForm = document.getElementById("guardrails-form");
+  const guardrailsQuestionInput = document.getElementById("guardrails-question-input");
+  const btnGuardrailsRun = document.getElementById("btn-guardrails-run");
+  const guardrailsLoadingState = document.getElementById("guardrails-loading-state");
+  const guardrailsOutputContainer = document.getElementById("guardrails-output-container");
+  const guardrailsUnguardedAnswer = document.getElementById("guardrails-unguarded-answer");
+  const guardrailsGuardedAnswer = document.getElementById("guardrails-guarded-answer");
+  const guardrailsStatusBadge = document.getElementById("guardrails-status-badge");
+  const guardrailsReasonText = document.getElementById("guardrails-reason-text");
+  const guardrailsGuardedCard = document.getElementById("guardrails-guarded-card");
+
+  if (guardrailsForm) {
+    guardrailsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const question = guardrailsQuestionInput.value.trim();
+      if (!question) return;
+
+      guardrailsOutputContainer.classList.add("hidden");
+      setGuardrailsLoading(true);
+
+      // Execute Unguarded (Direct LLM) and Guarded (Orchestration/RAG pipeline with guardrails) in parallel
+      const fetchUnguarded = fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+
+      const fetchGuarded = fetch("/api/orchestrate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, top_k: 3 })
+      });
+
+      try {
+        const [resUnguarded, resGuarded] = await Promise.allSettled([fetchUnguarded, fetchGuarded]);
+
+        // Process Unguarded Result
+        if (resUnguarded.status === "fulfilled" && resUnguarded.value.ok) {
+          const dataAsk = await resUnguarded.value.json();
+          guardrailsUnguardedAnswer.textContent = dataAsk.answer || "No response generated.";
+        } else if (resUnguarded.status === "fulfilled") {
+          const errData = await resUnguarded.value.json().catch(() => ({}));
+          guardrailsUnguardedAnswer.textContent = `Direct LLM Error (${resUnguarded.value.status}): ${errData.detail || "Request failed."}`;
+        } else {
+          guardrailsUnguardedAnswer.textContent = `Network Error: ${resUnguarded.reason?.message || "Failed to reach server."}`;
+        }
+
+        // Process Guarded Result
+        if (resGuarded.status === "fulfilled") {
+          const response = resGuarded.value;
+          const data = await response.json().catch(() => ({}));
+
+          if (response.ok) {
+            guardrailsStatusBadge.className = "pill-badge pill-green";
+            guardrailsStatusBadge.textContent = "PASSED";
+            guardrailsReasonText.textContent = "Question passed input length checks, retrieved evidence above similarity threshold (>=0.65), and met output grounding rules.";
+            guardrailsGuardedAnswer.textContent = data.answer || "No response generated.";
+            if (guardrailsGuardedCard) guardrailsGuardedCard.className = "compare-column card-green";
+          } else if (response.status === 400 || response.status === 422) {
+            // Guardrail Refusal / Rejection detail
+            const reason = data.detail || "Guardrail rejected input or retrieval evidence.";
+            guardrailsStatusBadge.className = "pill-badge pill-red";
+            guardrailsStatusBadge.textContent = "REFUSED";
+            guardrailsReasonText.textContent = `Guardrail Triggered: ${reason}`;
+            guardrailsGuardedAnswer.textContent = reason;
+            if (guardrailsGuardedCard) guardrailsGuardedCard.className = "compare-column card-pink";
+          } else {
+            const errDetail = data.detail || `Server error (${response.status})`;
+            guardrailsStatusBadge.className = "pill-badge pill-amber";
+            guardrailsStatusBadge.textContent = "ERROR";
+            guardrailsReasonText.textContent = `Pipeline Error (${response.status}): ${errDetail}`;
+            guardrailsGuardedAnswer.textContent = errDetail;
+            if (guardrailsGuardedCard) guardrailsGuardedCard.className = "compare-column card-white";
+          }
+        } else {
+          guardrailsStatusBadge.className = "pill-badge pill-amber";
+          guardrailsStatusBadge.textContent = "NETWORK ERROR";
+          guardrailsReasonText.textContent = `Network error: ${resGuarded.reason?.message || "Failed to reach backend."}`;
+          guardrailsGuardedAnswer.textContent = "Unable to connect to backend service.";
+        }
+
+        guardrailsOutputContainer.classList.remove("hidden");
+      } catch (err) {
+        console.error("Guardrails comparison error: ", err);
+      } finally {
+        setGuardrailsLoading(false);
+      }
+    });
+  }
+
+  function setGuardrailsLoading(isLoading) {
+    if (isLoading) {
+      guardrailsLoadingState.classList.remove("hidden");
+      if (btnGuardrailsRun) btnGuardrailsRun.disabled = true;
+    } else {
+      guardrailsLoadingState.classList.add("hidden");
+      if (btnGuardrailsRun) btnGuardrailsRun.disabled = false;
+    }
+  }
+
+  // ===================================================
+  // Live Multi-Model Comparison Logic
+  // ===================================================
+  const liveModelsForm = document.getElementById("live-models-form");
+  const liveModelsQuestionInput = document.getElementById("live-models-question-input");
+  const btnLiveModelsRun = document.getElementById("btn-live-models-run");
+
+  const modelsConfig = [
+    { id: "codellama", name: "Code Llama 7B", tag: "codellama:7b-instruct" },
+    { id: "phi3", name: "Phi-3 Mini", tag: "phi3:mini" },
+    { id: "qwen", name: "Qwen 2.5 3B", tag: "qwen2.5:3b" }
+  ];
+
+  if (liveModelsForm) {
+    liveModelsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const question = liveModelsQuestionInput.value.trim();
+      if (!question) return;
+
+      if (btnLiveModelsRun) btnLiveModelsRun.disabled = true;
+
+      // Reset and activate loading UI for each model card
+      modelsConfig.forEach((m) => {
+        const statusEl = document.getElementById(`${m.id}-status`);
+        const respEl = document.getElementById(`${m.id}-response`);
+        const latEl = document.getElementById(`${m.id}-latency`);
+        const evalEl = document.getElementById(`${m.id}-eval-tokens`);
+        const promptEl = document.getElementById(`${m.id}-prompt-tokens`);
+
+        if (statusEl) statusEl.classList.remove("hidden");
+        if (respEl) respEl.textContent = "";
+        if (latEl) latEl.textContent = "...";
+        if (evalEl) evalEl.textContent = "-";
+        if (promptEl) promptEl.textContent = "-";
+      });
+
+      // Run concurrent live inference calls for all 3 models
+      const promises = modelsConfig.map(async (m) => {
+        const startTime = performance.now();
+        const statusEl = document.getElementById(`${m.id}-status`);
+        const respEl = document.getElementById(`${m.id}-response`);
+        const latEl = document.getElementById(`${m.id}-latency`);
+        const evalEl = document.getElementById(`${m.id}-eval-tokens`);
+        const promptEl = document.getElementById(`${m.id}-prompt-tokens`);
+
+        try {
+          const res = await fetch("/api/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question, model: m.tag })
+          });
+
+          const endTime = performance.now();
+          const latencyMs = Math.round(endTime - startTime);
+          const latencySec = (latencyMs / 1000).toFixed(2) + "s";
+
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok) {
+            if (respEl) respEl.textContent = data.answer || "No output generated.";
+            if (latEl) latEl.textContent = latencySec;
+            if (evalEl) evalEl.textContent = data.eval_count != null ? data.eval_count : "N/A";
+            if (promptEl) promptEl.textContent = data.prompt_eval_count != null ? data.prompt_eval_count : "N/A";
+          } else {
+            const detail = data.detail || `HTTP ${res.status}`;
+            if (respEl) respEl.textContent = `Model Error: ${detail}`;
+            if (latEl) latEl.textContent = latencySec;
+            if (evalEl) evalEl.textContent = "Error";
+            if (promptEl) promptEl.textContent = "Error";
+          }
+        } catch (err) {
+          const endTime = performance.now();
+          const latencyMs = Math.round(endTime - startTime);
+          if (respEl) respEl.textContent = `Connection Error: Could not reach backend (${err.message})`;
+          if (latEl) latEl.textContent = (latencyMs / 1000).toFixed(2) + "s";
+          if (evalEl) evalEl.textContent = "Offline";
+          if (promptEl) promptEl.textContent = "Offline";
+        } finally {
+          if (statusEl) statusEl.classList.add("hidden");
+        }
+      });
+
+      await Promise.allSettled(promises);
+      if (btnLiveModelsRun) btnLiveModelsRun.disabled = false;
+    });
+  }
+
+  // ===================================================
+  // Codebase Understanding (Sourcegraph Integration) Logic
+  // ===================================================
+  const codebaseForm = document.getElementById("codebase-form");
+  const codebaseQuestionInput = document.getElementById("codebase-question-input");
+  const btnCodebaseRun = document.getElementById("btn-codebase-run");
+  const codebaseLoadingState = document.getElementById("codebase-loading-state");
+  const codebaseErrorState = document.getElementById("codebase-error-state");
+  const codebaseErrorMessage = document.getElementById("codebase-error-message");
+
+  const codebaseOutputContainer = document.getElementById("codebase-output-container");
+  const codebaseAnswerText = document.getElementById("codebase-answer-text");
+  const codebaseCopyBtn = document.getElementById("codebase-copy-btn");
+
+  const codebaseFilesSection = document.getElementById("codebase-files-section");
+  const codebaseFilesCount = document.getElementById("codebase-files-count");
+  const codebaseFilesList = document.getElementById("codebase-files-list");
+
+  const codebaseSourcesSection = document.getElementById("codebase-sources-section");
+  const codebaseSourcesList = document.getElementById("codebase-sources-list");
+
+  if (codebaseForm) {
+    codebaseForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const question = codebaseQuestionInput.value.trim();
+      if (!question) return;
+
+      hideCodebaseError();
+      if (codebaseOutputContainer) codebaseOutputContainer.classList.add("hidden");
+      setCodebaseLoading(true);
+
+      try {
+        const res = await fetch("/api/codebase/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error("Backend endpoint 'POST /api/codebase/ask' is not yet available (HTTP 404). The frontend is ready and waiting for the Sourcegraph backend service.");
+          }
+          throw new Error(data.detail || `Server returned error status (${res.status})`);
+        }
+
+        // 1. Render Answer / Explanation
+        const answer = data.answer || data.response || data.explanation || "No explanation returned by the backend.";
+        if (codebaseAnswerText) codebaseAnswerText.textContent = answer;
+
+        // 2. Render Files Analyzed
+        const files = data.files_analyzed || data.files || [];
+        renderCodebaseFiles(files);
+
+        // 3. Render Sources & Code Snippets
+        const sources = data.sources || data.references || [];
+        renderCodebaseSources(sources);
+
+        if (codebaseOutputContainer) codebaseOutputContainer.classList.remove("hidden");
+      } catch (err) {
+        showCodebaseError(err.message);
+      } finally {
+        setCodebaseLoading(false);
+      }
+    });
+  }
+
+  if (codebaseCopyBtn) {
+    codebaseCopyBtn.addEventListener("click", async () => {
+      const text = codebaseAnswerText ? codebaseAnswerText.textContent : "";
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = codebaseCopyBtn.textContent;
+        codebaseCopyBtn.textContent = "Copied!";
+        setTimeout(() => { codebaseCopyBtn.textContent = originalText; }, 2000);
+      } catch (err) {
+        console.error("Failed to copy codebase answer: ", err);
+      }
+    });
+  }
+
+  function renderCodebaseFiles(files) {
+    if (!codebaseFilesList) return;
+    codebaseFilesList.innerHTML = "";
+
+    if (!files || files.length === 0) {
+      if (codebaseFilesCount) codebaseFilesCount.textContent = "0 Files";
+      codebaseFilesList.innerHTML = '<p class="empty-notice">No specific files listed by the backend.</p>';
+      return;
+    }
+
+    if (codebaseFilesCount) codebaseFilesCount.textContent = `${files.length} File${files.length === 1 ? "" : "s"}`;
+
+    files.forEach((file) => {
+      const item = document.createElement("div");
+      item.className = "codebase-file-item";
+      const pathStr = typeof file === "string" ? file : (file.file || file.path || JSON.stringify(file));
+
+      item.innerHTML = `
+        <span class="codebase-file-icon">📄</span>
+        <span>${escapeHtml(pathStr)}</span>
+      `;
+      codebaseFilesList.appendChild(item);
+    });
+  }
+
+  function renderCodebaseSources(sources) {
+    if (!codebaseSourcesList) return;
+    codebaseSourcesList.innerHTML = "";
+
+    if (!sources || sources.length === 0) {
+      if (codebaseSourcesSection) codebaseSourcesSection.classList.add("hidden");
+      return;
+    }
+
+    if (codebaseSourcesSection) codebaseSourcesSection.classList.remove("hidden");
+
+    sources.forEach((src) => {
+      const card = document.createElement("div");
+      card.className = "codebase-source-card";
+
+      const filePath = src.file || src.filepath || src.path || "Source File";
+      const lineRange = src.lines || src.line_range || src.line_numbers || (src.start_line && src.end_line ? `${src.start_line}–${src.end_line}` : null);
+      const snippet = src.snippet || src.code || src.content || "";
+
+      const linesTag = lineRange ? `<span class="similarity-score-badge">Lines ${escapeHtml(String(lineRange))}</span>` : "";
+
+      card.innerHTML = `
+        <div class="codebase-source-header">
+          <span class="codebase-source-file">📂 ${escapeHtml(filePath)}</span>
+          ${linesTag}
+        </div>
+        ${snippet ? `<pre class="codebase-snippet-pre"><code>${escapeHtml(snippet)}</code></pre>` : ""}
+      `;
+      codebaseSourcesList.appendChild(card);
+    });
+  }
+
+  function setCodebaseLoading(isLoading) {
+    if (isLoading) {
+      if (codebaseLoadingState) codebaseLoadingState.classList.remove("hidden");
+      if (btnCodebaseRun) btnCodebaseRun.disabled = true;
+    } else {
+      if (codebaseLoadingState) codebaseLoadingState.classList.add("hidden");
+      if (btnCodebaseRun) btnCodebaseRun.disabled = false;
+    }
+  }
+
+  function showCodebaseError(msg) {
+    if (codebaseErrorMessage) codebaseErrorMessage.textContent = msg;
+    if (codebaseErrorState) codebaseErrorState.classList.remove("hidden");
+  }
+
+  function hideCodebaseError() {
+    if (codebaseErrorState) codebaseErrorState.classList.add("hidden");
+    if (codebaseErrorMessage) codebaseErrorMessage.textContent = "";
+  }
+
   function escapeHtml(str) {
     if (!str) return "";
     return String(str)
@@ -939,4 +1289,3 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchKbSummary();
   initWeek4Evaluation();
 });
-
