@@ -628,8 +628,96 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===================================================
-  // Week 4 Evaluation Logic (Loaded from /api/week4/*)
+  // Week 4 Evaluation Logic (Loaded from /api/week4/* or Fallback Data)
   // ===================================================
+  const WEEK4_DEFAULT_METRICS = {
+    models: [
+      {
+        model: "codellama:7b-instruct",
+        questions: 20,
+        quality: {
+          correctness: { score: 34, maximum: 40, percentage: 85.0 },
+          relevance: { score: 30, maximum: 40, percentage: 75.0 },
+          retrieval_quality: { relevant_questions: 14, total_questions: 19, percentage: 73.68 },
+          hallucination_rate: { hallucinated_responses: 8, total_responses: 20, percentage: 40.0 }
+        },
+        performance: {
+          latency_ms: { average: 19322.82, median: 17366.62, minimum: 9613.36, maximum: 32231.86 },
+          tokens: { average_input: 506.7, average_output: 175.95, average_total: 682.65, total: 13653 }
+        }
+      },
+      {
+        model: "phi3:mini",
+        questions: 20,
+        quality: {
+          correctness: { score: 40, maximum: 40, percentage: 100.0 },
+          relevance: { score: 37, maximum: 40, percentage: 92.5 },
+          retrieval_quality: { relevant_questions: 14, total_questions: 19, percentage: 73.68 },
+          hallucination_rate: { hallucinated_responses: 1, total_responses: 20, percentage: 5.0 }
+        },
+        performance: {
+          latency_ms: { average: 11440.03, median: 8097.61, minimum: 4564.82, maximum: 72166.59 },
+          tokens: { average_input: 495.7, average_output: 180.6, average_total: 676.3, total: 13526 }
+        }
+      },
+      {
+        model: "qwen2.5:3b",
+        questions: 20,
+        quality: {
+          correctness: { score: 38, maximum: 40, percentage: 95.0 },
+          relevance: { score: 40, maximum: 40, percentage: 100.0 },
+          retrieval_quality: { relevant_questions: 14, total_questions: 19, percentage: 73.68 },
+          hallucination_rate: { hallucinated_responses: 1, total_responses: 20, percentage: 5.0 }
+        },
+        performance: {
+          latency_ms: { average: 6241.39, median: 5828.7, minimum: 2746.85, maximum: 14777.42 },
+          tokens: { average_input: 418.2, average_output: 105.15, average_total: 523.35, total: 10467 }
+        }
+      }
+    ]
+  };
+
+  const WEEK4_DEFAULT_REPO_ANALYSIS = {
+    results: [
+      {
+        id: "Q1",
+        question: "Trace a student question from the frontend through the application service, retrieval service, and LLM service. Which files are involved?",
+        result: "failed",
+        finding: "The model generated a generic architecture and did not identify the actual repository files. Retrieved context contained only university policy documents."
+      },
+      {
+        id: "Q2",
+        question: "Which function in the application service calls the Retrieval Service, and what endpoint does it call?",
+        result: "failed",
+        finding: "The model invented a nonexistent user-information endpoint and did not identify orchestrate_workflow() or POST /retrieve."
+      },
+      {
+        id: "Q3",
+        question: "How does the Retrieval Service calculate similarity and select the top-k chunks?",
+        result: "failed",
+        finding: "The model gave a generic explanation mentioning alternatives such as bag-of-words and Jaccard similarity. The actual implementation uses Ollama embeddings, pure-Python cosine similarity, descending sort, and top-k selection."
+      },
+      {
+        id: "Q4",
+        question: "How does the LLM Service determine which Ollama model to use?",
+        result: "failed",
+        finding: "The model gave a generic explanation of Ollama and did not identify the actual model-selection logic."
+      },
+      {
+        id: "Q5",
+        question: "How does the Dockerized application communicate with Ollama running outside the containers?",
+        result: "failed",
+        finding: "The model listed generic Docker networking possibilities. It did not identify host.docker.internal, host-gateway, or the actual Docker Compose configuration."
+      },
+      {
+        id: "Q6",
+        question: "What happens if the Retrieval Service cannot be reached?",
+        result: "failed",
+        finding: "The model responded with irrelevant university attendance policy information instead of identifying the application's Retrieval Service connection-error handling."
+      }
+    ]
+  };
+
   const week4ModelCardsContainer = document.getElementById("week4-model-cards");
   const week4TableBody = document.getElementById("week4-table-body");
   const week4RepoList = document.getElementById("week4-repo-list");
@@ -638,37 +726,97 @@ document.addEventListener("DOMContentLoaded", () => {
   let week4RepoAnalysisCache = null;
 
   async function initWeek4Evaluation() {
+    // 1. Render immediately from cache or embedded default data
+    const activeModels = (week4MetricsCache && week4MetricsCache.models && week4MetricsCache.models.length >= 3)
+      ? week4MetricsCache.models
+      : WEEK4_DEFAULT_METRICS.models;
+    renderWeek4ModelCards(activeModels);
+    renderWeek4ComparisonTable(activeModels);
+
+    const activeRepoResults = (week4RepoAnalysisCache && week4RepoAnalysisCache.results && week4RepoAnalysisCache.results.length > 0)
+      ? week4RepoAnalysisCache.results
+      : WEEK4_DEFAULT_REPO_ANALYSIS.results;
+    renderWeek4RepoAnalysis(activeRepoResults);
+
+    // 2. Refresh from API or static files in background
     await fetchWeek4Metrics();
     await fetchWeek4RepoAnalysis();
   }
 
   async function fetchWeek4Metrics() {
     try {
-      const res = await fetch("/api/week4/metrics");
-      if (!res.ok) throw new Error("Failed to load Week 4 metrics");
-      week4MetricsCache = await res.json();
+      let data = null;
+      try {
+        const res = await fetch("/api/week4/metrics");
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.models && json.models.length >= 3) {
+            data = json;
+          }
+        }
+      } catch (_) {}
 
-      renderWeek4ModelCards(week4MetricsCache.models || []);
-      renderWeek4ComparisonTable(week4MetricsCache.models || []);
+      if (!data) {
+        try {
+          const staticRes = await fetch("/data/evaluation_metrics.json");
+          if (staticRes.ok) {
+            const staticJson = await staticRes.json();
+            if (staticJson && staticJson.models && staticJson.models.length >= 3) {
+              data = staticJson;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (data && data.models && data.models.length >= 3) {
+        week4MetricsCache = data;
+        renderWeek4ModelCards(data.models);
+        renderWeek4ComparisonTable(data.models);
+      }
     } catch (err) {
-      console.error("Week 4 metrics error: ", err);
+      console.warn("Week 4 metrics fetch notice: ", err);
     }
   }
 
   async function fetchWeek4RepoAnalysis() {
     try {
-      const res = await fetch("/api/week4/repository-analysis");
-      if (!res.ok) throw new Error("Failed to load repository analysis");
-      week4RepoAnalysisCache = await res.json();
+      let data = null;
+      try {
+        const res = await fetch("/api/week4/repository-analysis");
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.results && json.results.length > 0) {
+            data = json;
+          }
+        }
+      } catch (_) {}
 
-      renderWeek4RepoAnalysis(week4RepoAnalysisCache.results || []);
+      if (!data) {
+        try {
+          const staticRes = await fetch("/data/exercise6_repository_analysis.json");
+          if (staticRes.ok) {
+            const staticJson = await staticRes.json();
+            if (staticJson && staticJson.results && staticJson.results.length > 0) {
+              data = staticJson;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (data && data.results && data.results.length > 0) {
+        week4RepoAnalysisCache = data;
+        renderWeek4RepoAnalysis(data.results);
+      }
     } catch (err) {
-      console.error("Week 4 repo analysis error: ", err);
+      console.warn("Week 4 repo analysis fetch notice: ", err);
     }
   }
 
   function renderWeek4ModelCards(models) {
     if (!week4ModelCardsContainer) return;
+    if (!models || models.length === 0) {
+      models = WEEK4_DEFAULT_METRICS.models;
+    }
     week4ModelCardsContainer.innerHTML = "";
 
     const cardClasses = ["card-pink", "card-green", "card-blue"];
@@ -690,7 +838,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="model-name">${escapeHtml(modelName)}</div>
             <div class="model-tag">${escapeHtml(m.model)}</div>
           </div>
-          <span class="pill-badge pill-purple">${m.questions} Questions</span>
+          <span class="pill-badge pill-purple">${m.questions || 20} Questions</span>
         </div>
         <div class="model-metric-list">
           <div class="model-metric-item">
@@ -720,7 +868,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderWeek4ComparisonTable(models) {
-    if (!week4TableBody || models.length < 3) return;
+    if (!week4TableBody) return;
+    if (!models || models.length < 3) {
+      models = WEEK4_DEFAULT_METRICS.models;
+    }
 
     const m1 = models[0];
     const m2 = models[1];
@@ -740,7 +891,7 @@ document.addEventListener("DOMContentLoaded", () => {
     rows.forEach((r) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <strong>${escapeHtml(r.label)}</strong>
+        <td><strong>${escapeHtml(r.label)}</strong></td>
         <td>${escapeHtml(String(r.v1))}</td>
         <td>${escapeHtml(String(r.v2))}</td>
         <td>${escapeHtml(String(r.v3))}</td>
@@ -751,6 +902,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderWeek4RepoAnalysis(results) {
     if (!week4RepoList) return;
+    if (!results || results.length === 0) {
+      results = WEEK4_DEFAULT_REPO_ANALYSIS.results;
+    }
     week4RepoList.innerHTML = "";
 
     results.forEach((q) => {
@@ -1131,8 +1285,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/'/g, "&#039;");
   }
 
-  // Initial load: Fetch KB summary for top dashboard cards immediately
+  // Initial load: Fetch KB summary and initialize Week 4 evaluation immediately
   fetchKbSummary();
+  initWeek4Evaluation();
 });
-
-
