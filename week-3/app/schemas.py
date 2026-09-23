@@ -131,3 +131,17 @@ class GuardrailEvaluationResponse(BaseModel):
     guardrail_triggered: bool
     guarded_result: Dict[str, Any]
     unguarded_results: List[Dict[str, Any]]
+
+
+class DatasetEvaluationRequest(BaseModel):
+    models: List[str] = Field(default_factory=list)
+    limit: Optional[int] = Field(default=None, ge=1, le=100)
+
+
+class DatasetEvaluationResponse(BaseModel):
+    dataset: str
+    models: List[str]
+    question_count: int
+    elapsed_ms: float
+    resource_usage: Dict[str, Any]
+    model_comparison: Dict[str, Any]
