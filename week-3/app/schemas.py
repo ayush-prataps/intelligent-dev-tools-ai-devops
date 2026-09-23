@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class AskRequest(BaseModel):
@@ -148,8 +148,16 @@ class DatasetEvaluationResponse(BaseModel):
 
 
 class RepositoryQueryRequest(BaseModel):
-    query: str = Field(..., min_length=1)
+    query: Optional[str] = Field(default=None, min_length=1)
+    question: Optional[str] = Field(default=None, min_length=1)
     max_results: int = Field(default=6, ge=1, le=20)
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_question(cls, values):
+        if isinstance(values, dict) and not values.get("query") and values.get("question"):
+            values["query"] = values["question"]
+        return values
 
 
 class RepositoryMatch(BaseModel):
