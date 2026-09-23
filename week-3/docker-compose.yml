@@ -2,8 +2,8 @@ services:
   # 1. Application / Orchestrator Service (Gateway & Web UI)
   application:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: week-3/Dockerfile
     container_name: university_assistant_app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
@@ -23,8 +23,8 @@ services:
   # 2. Retrieval Service (Query Embeddings & Cosine Similarity)
   retrieval:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: week-3/Dockerfile
     container_name: university_assistant_retrieval
     command: uvicorn services.retrieval_service.main:app --host 0.0.0.0 --port 8001
     ports:
@@ -40,8 +40,8 @@ services:
   # 3. LLM Service (Ollama Code Llama Interface)
   llm:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: week-3/Dockerfile
     container_name: university_assistant_llm
     command: uvicorn services.llm_service.main:app --host 0.0.0.0 --port 8002
     ports:
