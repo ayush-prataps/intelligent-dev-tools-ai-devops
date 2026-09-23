@@ -20,6 +20,7 @@ from app.services.guardrail_evaluation_service import evaluate_guardrail_behavio
 from app.services.dataset_evaluation_service import evaluate_dataset
 from app.services.orchestrator import orchestrate_workflow
 from app.services.repository_search_service import search_repository
+from app.services.sourcegraph_service import search_sourcegraph
 
 app = FastAPI(title="University Knowledge Assistant", description="An AI assistant API powered by local models, embeddings, RAG retrieval, and orchestration", version="1.0.0")
 
@@ -93,11 +94,15 @@ async def evaluate_rag_dataset(payload: DatasetEvaluationRequest):
 
 @app.post("/api/repository/query", response_model=RepositoryQueryResponse)
 def query_repository(payload: RepositoryQueryRequest):
-    return RepositoryQueryResponse(**search_repository(payload.query, payload.max_results))
+    return RepositoryQueryResponse(**search_repository(payload.query or payload.question, payload.max_results))
+
+@app.post("/api/repository/sourcegraph")
+async def query_sourcegraph(payload: RepositoryQueryRequest):
+    return await search_sourcegraph(payload.query or payload.question, payload.max_results)
 
 @app.post("/api/codebase/ask")
 def ask_codebase(payload: RepositoryQueryRequest):
-    result = search_repository(payload.query, payload.max_results)
+    result = search_repository(payload.query or payload.question, payload.max_results)
     matches = result.get("matches", [])
     sources = [
         {
