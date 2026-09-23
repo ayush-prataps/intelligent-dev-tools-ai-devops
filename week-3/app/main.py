@@ -95,6 +95,34 @@ async def evaluate_rag_dataset(payload: DatasetEvaluationRequest):
 def query_repository(payload: RepositoryQueryRequest):
     return RepositoryQueryResponse(**search_repository(payload.query, payload.max_results))
 
+@app.post("/api/codebase/ask")
+def ask_codebase(payload: RepositoryQueryRequest):
+    result = search_repository(payload.query, payload.max_results)
+    matches = result.get("matches", [])
+    sources = [
+        {
+            "file": match["path"],
+            "lines": f"{match['line_start']}-{match['line_end']}",
+            "snippet": match["snippet"],
+            "score": match["score"],
+        }
+        for match in matches
+    ]
+    files = sorted({match["path"] for match in matches})
+    answer = (
+        f"Repository search found {len(matches)} line-addressable matches. "
+        f"Confidence: {result.get('confidence', 'low')}. "
+        f"{result.get('uncertainty', '')}"
+    )
+    return {
+        "answer": answer,
+        "files_analyzed": files,
+        "sources": sources,
+        "uncertainty": result.get("uncertainty"),
+        "confidence": result.get("confidence"),
+        "search_mode": result.get("search_mode"),
+    }
+
 @app.post("/api/compare", response_model=CompareResponse)
 async def compare_answers(payload: CompareRequest):
     result = await run_comparison(payload.question, top_k=payload.top_k)
