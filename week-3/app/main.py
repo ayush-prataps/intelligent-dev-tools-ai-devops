@@ -4,7 +4,6 @@ import time
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.schemas import (
@@ -108,8 +107,10 @@ async def query_sourcegraph(payload: RepositoryQueryRequest):
 def ask_codebase(payload: RepositoryQueryRequest):
     result = search_repository(payload.query or payload.question, payload.max_results)
     matches = result.get("matches", [])
-    sources = [{"file": m["path"], "lines": f"{m['line_start']}-{m['line_end']}", "snippet": m["snippet"], "score": m["score"]} for m in matches]
-    return {"answer": f"Repository search found {len(matches)} line-addressable matches. Confidence: {result.get('confidence', 'low')}. {result.get('uncertainty', '')}", "files_analyzed": sorted({m["path"] for m in matches}), "sources": sources, "uncertainty": result.get("uncertainty"), "confidence": result.get("confidence"), "search_mode": result.get("search_mode")}
+    sources = [{"file": match["path"], "lines": f"{match['line_start']}-{match['line_end']}", "snippet": match["snippet"], "score": match["score"]} for match in matches]
+    files = sorted({match["path"] for match in matches})
+    answer = f"Repository search found {len(matches)} line-addressable matches. Confidence: {result.get('confidence', 'low')}. {result.get('uncertainty', '')}"
+    return {"answer": answer, "files_analyzed": files, "sources": sources, "uncertainty": result.get("uncertainty"), "confidence": result.get("confidence"), "search_mode": result.get("search_mode")}
 
 @app.post("/api/compare", response_model=CompareResponse)
 async def compare_answers(payload: CompareRequest):
@@ -150,10 +151,6 @@ def get_week4_questions():
     if path:
         with open(path, "r", encoding="utf-8") as file: return json.load(file)
     return {"error": "Questions file not found", "questions": []}
-
-@app.get("/", include_in_schema=False)
-def demo_home():
-    return FileResponse(os.path.join(os.path.dirname(__file__), "static", "demo.html"))
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir): app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
