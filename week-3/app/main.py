@@ -11,7 +11,7 @@ from app.schemas import (
     CompareResponse, OrchestrateRequest, OrchestrateResponse,
     RAGEvaluationRequest, RAGEvaluationResponse, GuardrailEvaluationRequest,
     GuardrailEvaluationResponse, DatasetEvaluationRequest,
-    DatasetEvaluationResponse,
+    DatasetEvaluationResponse, RepositoryQueryRequest, RepositoryQueryResponse,
 )
 from app.services.ollama_service import generate_answer_with_metrics
 from app.services.knowledge_service import get_raw_documents, get_knowledge_summary, load_knowledge_base, build_knowledge_base
@@ -19,6 +19,7 @@ from app.services.rag_service import run_rag_pipeline, run_comparison, retrieve_
 from app.services.guardrail_evaluation_service import evaluate_guardrail_behavior
 from app.services.dataset_evaluation_service import evaluate_dataset
 from app.services.orchestrator import orchestrate_workflow
+from app.services.repository_search_service import search_repository
 
 app = FastAPI(title="University Knowledge Assistant", description="An AI assistant API powered by local models, embeddings, RAG retrieval, and orchestration", version="1.0.0")
 
@@ -89,6 +90,10 @@ async def evaluate_rag_guardrails(payload: GuardrailEvaluationRequest):
 async def evaluate_rag_dataset(payload: DatasetEvaluationRequest):
     result = await evaluate_dataset(models=payload.models or None, limit=payload.limit)
     return DatasetEvaluationResponse(**result)
+
+@app.post("/api/repository/query", response_model=RepositoryQueryResponse)
+def query_repository(payload: RepositoryQueryRequest):
+    return RepositoryQueryResponse(**search_repository(payload.query, payload.max_results))
 
 @app.post("/api/compare", response_model=CompareResponse)
 async def compare_answers(payload: CompareRequest):
