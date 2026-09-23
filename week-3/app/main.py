@@ -82,6 +82,23 @@ async def evaluate_rag_models(payload: RAGEvaluationRequest):
         results.append(generated)
     return RAGEvaluationResponse(question=payload.question, retrieved_chunks=context["retrieved_chunks"], results=results)
 
+@app.post("/api/rag/evaluate-live")
+async def evaluate_live_models(payload: RAGEvaluationRequest):
+    """Run all selected models against one shared, frozen retrieval context for a fair live UI comparison."""
+    models = payload.models or ["codellama:7b-instruct", "phi3:mini", "qwen2.5:3b"]
+    context = await retrieve_rag_context(payload.question, top_k=payload.top_k)
+    results = []
+    for model in models:
+        started = time.perf_counter()
+        try:
+            generated = await generate_answer_with_metrics(prompt=context["augmented_prompt"], model=model)
+            generated["status"] = "success"
+        except Exception as exc:
+            generated = {"model": model, "status": "error", "error": str(exc)}
+        generated["evaluation_elapsed_ms"] = round((time.perf_counter() - started) * 1000, 2)
+        results.append(generated)
+    return {"question": payload.question, "retrieved_chunks": context["retrieved_chunks"], "retrieval_context_shared": True, "models": models, "results": results}
+
 @app.post("/api/rag/evaluate-guardrails", response_model=GuardrailEvaluationResponse)
 async def evaluate_rag_guardrails(payload: GuardrailEvaluationRequest):
     result = await evaluate_guardrail_behavior(question=payload.question, top_k=payload.top_k, models=payload.models)
@@ -104,29 +121,10 @@ async def query_sourcegraph(payload: RepositoryQueryRequest):
 def ask_codebase(payload: RepositoryQueryRequest):
     result = search_repository(payload.query or payload.question, payload.max_results)
     matches = result.get("matches", [])
-    sources = [
-        {
-            "file": match["path"],
-            "lines": f"{match['line_start']}-{match['line_end']}",
-            "snippet": match["snippet"],
-            "score": match["score"],
-        }
-        for match in matches
-    ]
+    sources = [{"file": match["path"], "lines": f"{match['line_start']}-{match['line_end']}", "snippet": match["snippet"], "score": match["score"]} for match in matches]
     files = sorted({match["path"] for match in matches})
-    answer = (
-        f"Repository search found {len(matches)} line-addressable matches. "
-        f"Confidence: {result.get('confidence', 'low')}. "
-        f"{result.get('uncertainty', '')}"
-    )
-    return {
-        "answer": answer,
-        "files_analyzed": files,
-        "sources": sources,
-        "uncertainty": result.get("uncertainty"),
-        "confidence": result.get("confidence"),
-        "search_mode": result.get("search_mode"),
-    }
+    answer = f"Repository search found {len(matches)} line-addressable matches. Confidence: {result.get('confidence', 'low')}. {result.get('uncertainty', '')}"
+    return {"answer": answer, "files_analyzed": files, "sources": sources, "uncertainty": result.get("uncertainty"), "confidence": result.get("confidence"), "search_mode": result.get("search_mode")}
 
 @app.post("/api/compare", response_model=CompareResponse)
 async def compare_answers(payload: CompareRequest):
