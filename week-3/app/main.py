@@ -17,6 +17,8 @@ from app.schemas import (
     OrchestrateResponse,
     RAGEvaluationRequest,
     RAGEvaluationResponse,
+    GuardrailEvaluationRequest,
+    GuardrailEvaluationResponse,
 )
 from app.services.ollama_service import generate_answer_with_metrics
 from app.services.knowledge_service import (
@@ -30,6 +32,7 @@ from app.services.rag_service import (
     run_comparison,
     retrieve_rag_context,
 )
+from app.services.guardrail_evaluation_service import evaluate_guardrail_behavior
 from app.services.orchestrator import orchestrate_workflow
 
 app = FastAPI(
@@ -155,6 +158,17 @@ async def evaluate_rag_models(payload: RAGEvaluationRequest):
         retrieved_chunks=context["retrieved_chunks"],
         results=results,
     )
+
+
+@app.post("/api/rag/evaluate-guardrails", response_model=GuardrailEvaluationResponse)
+async def evaluate_rag_guardrails(payload: GuardrailEvaluationRequest):
+    """Compare unguarded model output with the retrieval guardrail decision."""
+    result = await evaluate_guardrail_behavior(
+        question=payload.question,
+        top_k=payload.top_k,
+        models=payload.models,
+    )
+    return GuardrailEvaluationResponse(**result)
 
 
 @app.post("/api/compare", response_model=CompareResponse)
