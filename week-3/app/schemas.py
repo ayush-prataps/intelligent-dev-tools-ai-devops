@@ -114,3 +114,20 @@ class RAGEvaluationResponse(BaseModel):
     question: str
     retrieved_chunks: List[RetrievedChunk]
     results: List[Dict[str, Any]]
+
+
+class GuardrailEvaluationRequest(BaseModel):
+    question: str = Field(..., min_length=1)
+    top_k: int = Field(default=3, ge=1, le=10)
+    models: List[str] = Field(default_factory=list)
+
+
+class GuardrailEvaluationResponse(BaseModel):
+    question: str
+    retrieved_chunks: List[RetrievedChunk]
+    guardrail_threshold: float
+    highest_similarity: float
+    guardrail_passed: bool
+    guardrail_triggered: bool
+    guarded_result: Dict[str, Any]
+    unguarded_results: List[Dict[str, Any]]
