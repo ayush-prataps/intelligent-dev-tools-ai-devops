@@ -145,3 +145,25 @@ class DatasetEvaluationResponse(BaseModel):
     elapsed_ms: float
     resource_usage: Dict[str, Any]
     model_comparison: Dict[str, Any]
+
+
+class RepositoryQueryRequest(BaseModel):
+    query: str = Field(..., min_length=1)
+    max_results: int = Field(default=6, ge=1, le=20)
+
+
+class RepositoryMatch(BaseModel):
+    path: str
+    line_start: int
+    line_end: int
+    snippet: str
+    matched_terms: List[str]
+    score: float
+
+
+class RepositoryQueryResponse(BaseModel):
+    query: str
+    matches: List[RepositoryMatch]
+    uncertainty: str
+    confidence: str
+    search_mode: str
