@@ -35,12 +35,26 @@ def validate_input(question: str) -> tuple[bool, str]:
     return True, ""
 
 
+def _chunk_similarity(chunk) -> float:
+    """Read similarity from either a dictionary or an object model."""
+    if isinstance(chunk, dict):
+        return float(chunk.get("similarity_score", 0.0))
+    return float(getattr(chunk, "similarity_score", 0.0))
+
+
+def _chunk_text(chunk) -> str:
+    """Read chunk text from either a dictionary or an object model."""
+    if isinstance(chunk, dict):
+        return str(chunk.get("text", ""))
+    return str(getattr(chunk, "text", ""))
+
+
 def validate_retrieval(retrieved_chunks) -> tuple[bool, str]:
     """Require sufficient retrieval evidence before calling the LLM."""
     if not retrieved_chunks:
         return False, GUARDRAIL_REFUSAL
 
-    top_score = max(chunk.similarity_score for chunk in retrieved_chunks)
+    top_score = max(_chunk_similarity(chunk) for chunk in retrieved_chunks)
 
     if top_score < MIN_RETRIEVAL_SIMILARITY:
         return False, GUARDRAIL_REFUSAL
@@ -63,7 +77,7 @@ def validate_output(answer: str, retrieved_chunks) -> tuple[bool, str]:
     if not answer or not answer.strip():
         return False, GUARDRAIL_REFUSAL
 
-    context_text = " ".join(chunk.text for chunk in retrieved_chunks)
+    context_text = " ".join(_chunk_text(chunk) for chunk in retrieved_chunks)
 
     context_terms = _meaningful_terms(context_text)
     answer_terms = _meaningful_terms(answer)
