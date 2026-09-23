@@ -4,6 +4,7 @@ import time
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.schemas import (
@@ -34,13 +35,11 @@ async def ask_question(payload: AskRequest):
         result = await generate_answer_with_metrics(prompt=payload.question, model=payload.model)
         return AskResponse(**result)
     except Exception as exc:
-        if isinstance(exc, HTTPException):
-            raise
+        if isinstance(exc, HTTPException): raise
         raise HTTPException(status_code=500, detail=f"Error generating answer: {exc}")
 
 @app.get("/api/knowledge/summary")
 def get_kb_summary(): return get_knowledge_summary()
-
 @app.get("/api/knowledge/documents")
 def list_documents(): return get_raw_documents()
 
@@ -63,28 +62,9 @@ async def trigger_indexing():
 
 @app.post("/api/rag", response_model=RagResponse)
 async def ask_rag(payload: RagRequest):
-    result = await run_rag_pipeline(question=payload.question, top_k=payload.top_k, model=payload.model)
-    return RagResponse(**result)
+    return RagResponse(**(await run_rag_pipeline(question=payload.question, top_k=payload.top_k, model=payload.model)))
 
-@app.post("/api/rag/evaluate", response_model=RAGEvaluationResponse)
-async def evaluate_rag_models(payload: RAGEvaluationRequest):
-    models = payload.models or ["codellama:7b-instruct", "phi3:mini", "qwen2.5:3b"]
-    context = await retrieve_rag_context(payload.question, top_k=payload.top_k)
-    results = []
-    for model in models:
-        start_time = time.perf_counter()
-        try:
-            generated = await generate_answer_with_metrics(prompt=context["augmented_prompt"], model=model)
-            generated["status"] = "success"
-        except Exception as exc:
-            generated = {"model": model, "status": "error", "error": str(exc)}
-        generated["evaluation_elapsed_ms"] = round((time.perf_counter() - start_time) * 1000, 2)
-        results.append(generated)
-    return RAGEvaluationResponse(question=payload.question, retrieved_chunks=context["retrieved_chunks"], results=results)
-
-@app.post("/api/rag/evaluate-live")
-async def evaluate_live_models(payload: RAGEvaluationRequest):
-    """Run all selected models against one shared, frozen retrieval context for a fair live UI comparison."""
+async def _run_live_models(payload: RAGEvaluationRequest):
     models = payload.models or ["codellama:7b-instruct", "phi3:mini", "qwen2.5:3b"]
     context = await retrieve_rag_context(payload.question, top_k=payload.top_k)
     results = []
@@ -99,15 +79,22 @@ async def evaluate_live_models(payload: RAGEvaluationRequest):
         results.append(generated)
     return {"question": payload.question, "retrieved_chunks": context["retrieved_chunks"], "retrieval_context_shared": True, "models": models, "results": results}
 
+@app.post("/api/rag/evaluate", response_model=RAGEvaluationResponse)
+async def evaluate_rag_models(payload: RAGEvaluationRequest):
+    result = await _run_live_models(payload)
+    return RAGEvaluationResponse(question=result["question"], retrieved_chunks=result["retrieved_chunks"], results=result["results"])
+
+@app.post("/api/rag/evaluate-live")
+async def evaluate_live_models(payload: RAGEvaluationRequest):
+    return await _run_live_models(payload)
+
 @app.post("/api/rag/evaluate-guardrails", response_model=GuardrailEvaluationResponse)
 async def evaluate_rag_guardrails(payload: GuardrailEvaluationRequest):
-    result = await evaluate_guardrail_behavior(question=payload.question, top_k=payload.top_k, models=payload.models)
-    return GuardrailEvaluationResponse(**result)
+    return GuardrailEvaluationResponse(**(await evaluate_guardrail_behavior(question=payload.question, top_k=payload.top_k, models=payload.models)))
 
 @app.post("/api/rag/evaluate-dataset", response_model=DatasetEvaluationResponse)
 async def evaluate_rag_dataset(payload: DatasetEvaluationRequest):
-    result = await evaluate_dataset(models=payload.models or None, limit=payload.limit)
-    return DatasetEvaluationResponse(**result)
+    return DatasetEvaluationResponse(**(await evaluate_dataset(models=payload.models or None, limit=payload.limit)))
 
 @app.post("/api/repository/query", response_model=RepositoryQueryResponse)
 def query_repository(payload: RepositoryQueryRequest):
@@ -121,15 +108,12 @@ async def query_sourcegraph(payload: RepositoryQueryRequest):
 def ask_codebase(payload: RepositoryQueryRequest):
     result = search_repository(payload.query or payload.question, payload.max_results)
     matches = result.get("matches", [])
-    sources = [{"file": match["path"], "lines": f"{match['line_start']}-{match['line_end']}", "snippet": match["snippet"], "score": match["score"]} for match in matches]
-    files = sorted({match["path"] for match in matches})
-    answer = f"Repository search found {len(matches)} line-addressable matches. Confidence: {result.get('confidence', 'low')}. {result.get('uncertainty', '')}"
-    return {"answer": answer, "files_analyzed": files, "sources": sources, "uncertainty": result.get("uncertainty"), "confidence": result.get("confidence"), "search_mode": result.get("search_mode")}
+    sources = [{"file": m["path"], "lines": f"{m['line_start']}-{m['line_end']}", "snippet": m["snippet"], "score": m["score"]} for m in matches]
+    return {"answer": f"Repository search found {len(matches)} line-addressable matches. Confidence: {result.get('confidence', 'low')}. {result.get('uncertainty', '')}", "files_analyzed": sorted({m["path"] for m in matches}), "sources": sources, "uncertainty": result.get("uncertainty"), "confidence": result.get("confidence"), "search_mode": result.get("search_mode")}
 
 @app.post("/api/compare", response_model=CompareResponse)
 async def compare_answers(payload: CompareRequest):
-    result = await run_comparison(payload.question, top_k=payload.top_k)
-    return CompareResponse(**result)
+    return await run_comparison(payload.question, top_k=payload.top_k)
 
 @app.post("/api/orchestrate", response_model=OrchestrateResponse)
 async def orchestrate_request(payload: OrchestrateRequest):
@@ -141,31 +125,35 @@ def _find_week4_file(filename: str, subfolder: str = "results") -> Optional[str]
 
 @app.get("/api/week4/metrics")
 def get_week4_metrics():
-    metrics_path = _find_week4_file("evaluation_metrics.json", "results")
-    if metrics_path:
-        with open(metrics_path, "r", encoding="utf-8") as file: return json.load(file)
+    path = _find_week4_file("evaluation_metrics.json")
+    if path:
+        with open(path, "r", encoding="utf-8") as file: return json.load(file)
     return {"error": "Metrics file not found", "models": []}
 
 @app.get("/api/week4/repository-analysis")
 def get_week4_repo_analysis():
-    repo_path = _find_week4_file("exercise6_repository_analysis.json", "results")
-    if repo_path:
-        with open(repo_path, "r", encoding="utf-8") as file: return json.load(file)
+    path = _find_week4_file("exercise6_repository_analysis.json")
+    if path:
+        with open(path, "r", encoding="utf-8") as file: return json.load(file)
     return {"error": "Repository analysis file not found", "results": []}
 
 @app.get("/api/week4/guardrails")
 def get_week4_guardrails():
-    guard_path = _find_week4_file("ai_output_testing_results.json", "results")
-    if guard_path:
-        with open(guard_path, "r", encoding="utf-8") as file: return json.load(file)
+    path = _find_week4_file("ai_output_testing_results.json")
+    if path:
+        with open(path, "r", encoding="utf-8") as file: return json.load(file)
     return {"error": "Guardrails file not found", "tests": []}
 
 @app.get("/api/week4/questions")
 def get_week4_questions():
-    questions_path = _find_week4_file("evaluation_questions.json", "data")
-    if questions_path:
-        with open(questions_path, "r", encoding="utf-8") as file: return json.load(file)
+    path = _find_week4_file("evaluation_questions.json", "data")
+    if path:
+        with open(path, "r", encoding="utf-8") as file: return json.load(file)
     return {"error": "Questions file not found", "questions": []}
+
+@app.get("/", include_in_schema=False)
+def demo_home():
+    return FileResponse(os.path.join(os.path.dirname(__file__), "static", "demo.html"))
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir): app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
