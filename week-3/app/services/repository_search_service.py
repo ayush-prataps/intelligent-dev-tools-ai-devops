@@ -14,9 +14,8 @@ def _repository_roots() -> List[Path]:
     if configured:
         root = Path(configured).expanduser().resolve()
         return [root] if root.is_dir() else []
-    module = Path(__file__).resolve()
-    roots = [module.parents[3], module.parents[2], Path.cwd()]
-    return list(dict.fromkeys(root for root in roots if root.is_dir()))[:2]
+    root = Path.cwd().resolve()
+    return [root] if root.is_dir() else []
 
 
 def _files() -> List[Path]:
