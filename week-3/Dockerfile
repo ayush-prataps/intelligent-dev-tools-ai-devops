@@ -10,13 +10,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install dependencies
-COPY requirements.txt .
+COPY week-3/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source code, microservices, and knowledge base data
-COPY app/ ./app/
-COPY services/ ./services/
-COPY data/ ./data/
+COPY week-3/app/ ./app/
+COPY week-3/services/ ./services/
+COPY week-3/data/ ./data/
+COPY week-4/data/ ./week-4/data/
 
 # Expose default application gateway port
 EXPOSE 8000
